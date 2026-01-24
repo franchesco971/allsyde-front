@@ -22,7 +22,13 @@ export async function login(email: string, password: string): Promise<string> {
   const response = await httpPost<LoginResponse>(
     '/api/login',
     { email, password },
-    { requireAuth: false }
+    { 
+      requireAuth: false,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    }
   );
 
   setAuthToken(response.token);
@@ -40,7 +46,11 @@ export function logout(): void {
  * Récupère les informations de l'utilisateur connecté
  */
 export async function getCurrentUser(): Promise<CurrentUser> {
-  return httpGet<CurrentUser>('/api/me');
+  return httpGet<CurrentUser>('/api/me', {
+    headers: {
+      'Accept': 'application/json',
+    }
+  });
 }
 
 /**

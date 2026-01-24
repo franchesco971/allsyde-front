@@ -29,9 +29,9 @@ export interface HttpRequestOptions extends RequestInit {
 /**
  * Configuration par défaut pour les requêtes
  */
-const defaultHeaders: HeadersInit = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json',
+const defaultHeaders: Record<string, string> = {
+  'Content-Type': 'application/ld+json',
+  'Accept': 'application/ld+json',
 };
 
 /**

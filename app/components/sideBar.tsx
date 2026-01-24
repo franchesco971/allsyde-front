@@ -1,18 +1,15 @@
 'use client';
 import { Home, Building2, Settings, User, FileText, Receipt, Wallet, Hammer, Users, FolderOpen, Leaf, ShieldAlert, Sparkles } from 'lucide-react';
-// import { Link, useLocation } from 'react-router-dom';
-// import { cn } from '@/lib/utils';
-// import { Badge } from './ui/badge';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { cn } from '../lib/util';
-import { useSearchParams, usePathname } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation';
+import { useAuthContext } from '../lib/AuthContext';
 
 export default function Sidebar({ level = 'global', siteId}:Readonly<{level:'global'|'site', siteId?:string}>) {
-
-    // const location = useLocation();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const { user, logout } = useAuthContext();
   
   const globalMenuItems = [
     { icon: Home, label: 'Tableau de bord', path: '/dashboard', hasAI: true , section: null},
@@ -108,10 +105,26 @@ export default function Sidebar({ level = 'global', siteId}:Readonly<{level:'glo
             <User className="w-[18px] h-[18px] text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-medium text-foreground truncate leading-tight">Jean Dupont</p>
-            <p className="text-[11px] text-muted-foreground truncate leading-tight">Gestionnaire</p>
+            <p className="text-[13px] font-medium text-foreground truncate leading-tight">
+              {user?.email || 'Utilisateur'}
+            </p>
+            <p className="text-[11px] text-muted-foreground truncate leading-tight">
+              {user?.roles?.includes('ROLE_ADMIN') ? 'Administrateur' : 'Gestionnaire'}
+            </p>
           </div>
         </div>
+        {/* Bouton de déconnexion */}
+        <button
+          onClick={logout}
+          className="w-full mt-2 px-3 py-2 text-[13px] text-destructive hover:bg-destructive/10 rounded-lg transition-colors flex items-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Déconnexion
+        </button>
       </div>
     </div>
   );

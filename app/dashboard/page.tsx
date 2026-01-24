@@ -1,10 +1,5 @@
 'use client';
 
-// mport { useRouter } from 'next/router';
-// import { Sidebar } from '@/components/Sidebar';
-// import { StatCard } from '@/components/StatCard';
-// import { ActionCard } from '@/components/ActionCard';
-// import { Button } from '@/components/ui/button';
 import { FileText, Receipt, Building2, Wallet, TrendingUp, AlertCircle, Plus, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '../components/sideBar';
@@ -12,6 +7,7 @@ import { Button } from '../components/ui/button';
 import StatCard from '../components/statCard';
 import { useRouter } from 'next/navigation';
 import ActionCard from '../components/actionCard';
+import { ProtectedRoute } from '../lib/ProtectedRoute';
 
 const budgetData = [
   { name: 'Jan', OPEX: 45000, CAPEX: 120000 },
@@ -27,7 +23,7 @@ const distributionData = [
   { name: 'CAPEX', value: 685000, color: 'hsl(var(--secondary))' },
 ];
 
-export default function Dashboard() {
+function DashboardContent() {
     const {push} = useRouter();
 
   return (
@@ -198,5 +194,13 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 }

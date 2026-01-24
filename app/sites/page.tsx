@@ -13,6 +13,7 @@ import { AIInsightBadge } from '../components/aIInsightBadge';
 import { useSites } from '../lib/hooks';
 import { getIconComponent } from '../lib/utils/icons';
 import type { Site as APISite } from '../lib/types/site';
+import { ProtectedRoute } from '../lib/ProtectedRoute';
 
 type RiskLevel = 'normal' | 'élevé' | 'critique';
 
@@ -35,9 +36,11 @@ const getStatusLabel = (status: string) => {
   return 'Alerte';
 };
 
-export default function Sites() {
+function SitesContent() {
   const router = useRouter();
   const { sites: apiSites, siteTypes, isLoading, error } = useSites();
+
+  console.log('API Sites:', apiSites);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCity, setFilterCity] = useState('all');
@@ -465,4 +468,12 @@ export default function Sites() {
       </main>
     </div>
   );
-};
+}
+
+export default function Sites() {
+  return (
+    <ProtectedRoute>
+      <SitesContent />
+    </ProtectedRoute>
+  );
+}
