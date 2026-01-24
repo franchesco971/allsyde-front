@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import { Sidebar } from '@/components/Sidebar';
-// import { Button } from '@/components/ui/button';
-// import { Input } from '@/components/ui/input';
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-// import { Badge } from '@/components/ui/badge';
-// import { Card } from '@/components/ui/card';
-// import { AIInsightBadge } from '@/components/AIInsightBadge';
-import { Search, Filter, Plus, Grid3x3, List, MapPin, TrendingUp, FileText, Sparkles, Building2, ShoppingCart, Warehouse, Home as HomeIcon } from 'lucide-react';
+import { Search, Plus, Grid3x3, List, MapPin, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '../lib/util';
 import Sidebar from '../components/sideBar';
 import { Button } from '../components/ui/button';
@@ -18,11 +10,35 @@ import { useRouter } from 'next/navigation';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { AIInsightBadge } from '../components/aIInsightBadge';
-// import { cn } from '@/lib/utils';
+import { useSites } from '../lib/hooks';
+import { getIconComponent } from '../lib/utils/icons';
+import type { Site as APISite } from '../lib/types/site';
+
+type RiskLevel = 'normal' | 'élevé' | 'critique';
+
+// Type étendu pour la vue (API + propriétés calculées)
+interface SiteDisplay extends APISite {
+  icon: React.ElementType<{ className?: string }>;
+  riskLevel: RiskLevel;
+}
+
+// Fonctions helper pour le styling
+const getBudgetColor = (budget: number) => {
+  if (budget > 80) return 'text-destructive';
+  if (budget > 70) return 'text-warning';
+  return 'text-success';
+};
+
+const getStatusLabel = (status: string) => {
+  if (status === 'good') return 'Bon';
+  if (status === 'warning') return 'Attention';
+  return 'Alerte';
+};
 
 export default function Sites() {
-//   const navigate = useNavigate();
-  const router = useRouter()
+  const router = useRouter();
+  const { sites: apiSites, siteTypes, isLoading, error } = useSites();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCity, setFilterCity] = useState('all');
   const [filterType, setFilterType] = useState('all');
@@ -30,131 +46,40 @@ export default function Sites() {
   const [filterESG, setFilterESG] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
 
-  type SiteStatus = 'good' | 'warning' | 'alert';
-    type AIStatus = 'ok' | 'attention' | 'alerte';
-    type RiskLevel = 'normal' | 'élevé' | 'critique';
-
-    interface Site {
-    id: string;
-    name: string;
-    address: string;
-    surface: number;
-    type: string;
-    esgScore: number;
-    budgetUsed: number;
-    activeQuotes: number;
-    image: string;
-    status: SiteStatus;
-    aiStatus: AIStatus;
-    aiMessage: string;
-    icon: React.ElementType<{ className?: string }>;
-    riskLevel: RiskLevel;
-    }
+  // Transformation des sites API en sites avec icônes
+  const sites: SiteDisplay[] = apiSites.map((site) => {
+    // Déterminer le niveau de risque basé sur le budget
+    let riskLevel: RiskLevel = 'normal';
+    if (site.budgetUsed >= 90) riskLevel = 'critique';
+    else if (site.budgetUsed >= 75) riskLevel = 'élevé';
+    
+    // Récupérer l'icône depuis le type de site
+    const siteTypeIcon = typeof site.siteType === 'object' && site.siteType?.icon 
+      ? site.siteType.icon 
+      : undefined;
+    const Icon = getIconComponent(siteTypeIcon);
+    
+    return {
+      ...site,
+      icon: Icon,
+      riskLevel,
+    };
+  });
   
-  const mockSites: Site[] = [
-    {
-      id: '1',
-      name: 'Tour Montparnasse',
-      address: '33 Avenue du Maine, 75015 Paris',
-      surface: 12500,
-      type: 'Bureau',
-      esgScore: 82,
-      budgetUsed: 68,
-      activeQuotes: 3,
-      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab',
-      status: 'good',
-      aiStatus: 'ok',
-      aiMessage: 'Tous les indicateurs sont au vert',
-      icon: Building2,
-      riskLevel: 'normal',
-    },
-    {
-      id: '2',
-      name: 'Centre Commercial Lyon Part-Dieu',
-      address: '17 Rue du Docteur Bouchut, 69003 Lyon',
-      surface: 28000,
-      type: 'Commerce',
-      esgScore: 75,
-      budgetUsed: 82,
-      activeQuotes: 5,
-      image: 'https://images.unsplash.com/photo-1574958269340-fa927503f3dd',
-      status: 'warning',
-      aiStatus: 'attention',
-      aiMessage: 'Budget > 80% - Surveiller les engagements',
-      icon: ShoppingCart,
-      riskLevel: 'élevé',
-    },
-    {
-      id: '3',
-      name: 'Résidence Les Jardins',
-      address: '45 Boulevard de la Liberté, 59000 Lille',
-      surface: 8500,
-      type: 'Résidentiel',
-      esgScore: 88,
-      budgetUsed: 45,
-      activeQuotes: 1,
-      image: 'https://images.unsplash.com/photo-1621831337128-35676ca30868',
-      status: 'good',
-      aiStatus: 'ok',
-      aiMessage: 'Sous-consommation détectée - Budget optimisable',
-      icon: HomeIcon,
-      riskLevel: 'normal',
-    },
-    {
-      id: '4',
-      name: 'Entrepôt Logistique Marseille',
-      address: 'Zone Industrielle, 13015 Marseille',
-      surface: 35000,
-      type: 'Logistique',
-      esgScore: 65,
-      budgetUsed: 91,
-      activeQuotes: 8,
-      image: 'https://images.unsplash.com/photo-1553413077-190dd305871c',
-      status: 'alert',
-      aiStatus: 'alerte',
-      aiMessage: 'Dépassement probable de 12% sur la ligne Sécurité (contrat Samsic)',
-      icon: Warehouse,
-      riskLevel: 'critique',
-    },
-    {
-      id: '5',
-      name: 'Immeuble Haussmann',
-      address: '128 Boulevard Haussmann, 75008 Paris',
-      surface: 6200,
-      type: 'Bureau',
-      esgScore: 79,
-      budgetUsed: 56,
-      activeQuotes: 2,
-      image: 'https://images.pexels.com/photos/269077/pexels-photo-269077.jpeg',
-      status: 'good',
-      aiStatus: 'ok',
-      aiMessage: 'Performance normale',
-      icon: Building2,
-      riskLevel: 'normal',
-    },
-    {
-      id: '6',
-      name: 'Campus Tech Bordeaux',
-      address: '12 Quai de Bacalan, 33300 Bordeaux',
-      surface: 15000,
-      type: 'Bureau',
-      esgScore: 91,
-      budgetUsed: 72,
-      activeQuotes: 4,
-      image: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623',
-      status: 'good',
-      aiStatus: 'ok',
-      aiMessage: 'Excellente gestion',
-      icon: Building2,
-      riskLevel: 'normal',
-    },
-  ];
+  // Extraction des villes uniques pour le filtre
+  const uniqueCities = Array.from(new Set(sites.map(site => site.city).filter(Boolean)));
   
-  const filteredSites = mockSites.filter((site) => {
-    const matchesSearch = site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredSites = sites.filter((site) => {
+    const matchesSearch = site.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          site.address.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCity = filterCity === 'all' || site.address.includes(filterCity);
-    const matchesType = filterType === 'all' || site.type === filterType;
+    const matchesCity = filterCity === 'all' || site.city === filterCity;
+    
+    // Obtenir le nom du type depuis l'objet siteType
+    const siteTypeName = typeof site.siteType === 'object' && site.siteType?.label 
+      ? site.siteType.label 
+      : '';
+    const matchesType = filterType === 'all' || siteTypeName === filterType;
+    
     const matchesRisk = filterRisk === 'all' || site.riskLevel === filterRisk;
     const matchesESG = filterESG === 'all' || 
                        (filterESG === 'excellent' && site.esgScore >= 80) ||
@@ -163,10 +88,11 @@ export default function Sites() {
     return matchesSearch && matchesCity && matchesType && matchesRisk && matchesESG;
   });
   
+  // Calcul des statistiques IA
   const aiStats = {
-    atRisk: 3,
-    overBudget: 2,
-    underBudget: 1,
+    atRisk: sites.filter(s => s.budgetUsed > 70).length,
+    overBudget: sites.filter(s => s.budgetUsed > 90).length,
+    underBudget: sites.filter(s => s.budgetUsed < 50).length,
   };
   
   const statusColors = {
@@ -180,6 +106,49 @@ export default function Sites() {
     attention: { color: 'bg-warning', textColor: 'text-warning', label: 'Attention' },
     alerte: { color: 'bg-destructive', textColor: 'text-destructive', label: 'Alerte' },
   };
+
+  // Gestion du chargement
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar level="global" />
+        <main className="flex-1 ml-64">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Chargement des sites...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Gestion des erreurs
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar level="global" />
+        <main className="flex-1 ml-64">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center max-w-md">
+              <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button 
+                onClick={() => globalThis.location.reload()} 
+                className="bg-primary hover:bg-primary-hover text-primary-foreground"
+              >
+                Réessayer
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   
   return (
     <div className="flex min-h-screen bg-background">
@@ -229,22 +198,14 @@ export default function Sites() {
                 />
               </div>
               <Select value={filterCity} onValueChange={setFilterCity}>
-                {/* <SelectTrigger className((site) => {
-    const matchesSearch = site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         site.address.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCity = filterCity === 'all' || site.address.includes(filterCity);
-    const matchesType = filterType === 'all' || site.type === filterType;
-    const matchesRisk = filterRisk === '="w-[140px] h-9 text-sm">
-                  <Filter className="w-3.5 h-3.5 mr-1.5" />
+                <SelectTrigger className="w-[140px] h-9 text-sm">
                   <SelectValue placeholder="Ville" />
-                </SelectTrigger> */}
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes</SelectItem>
-                  <SelectItem value="Paris">Paris</SelectItem>
-                  <SelectItem value="Lyon">Lyon</SelectItem>
-                  <SelectItem value="Lille">Lille</SelectItem>
-                  <SelectItem value="Marseille">Marseille</SelectItem>
-                  <SelectItem value="Bordeaux">Bordeaux</SelectItem>
+                  {uniqueCities.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Select value={filterType} onValueChange={setFilterType}>
@@ -253,10 +214,9 @@ export default function Sites() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="Bureau">Bureau</SelectItem>
-                  <SelectItem value="Commerce">Commerce</SelectItem>
-                  <SelectItem value="Résidentiel">Résidentiel</SelectItem>
-                  <SelectItem value="Logistique">Logistique</SelectItem>
+                  {siteTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.label}>{type.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Select value={filterRisk} onValueChange={setFilterRisk}>
@@ -327,8 +287,8 @@ export default function Sites() {
                     {/* Image bandeau - Réduite */}
                     <div className="relative h-32 overflow-hidden">
                       <img 
-                        src={site.image} 
-                        alt={site.name} 
+                        src={site.imageUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab'} 
+                        alt={site.label} 
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                       <div className="absolute top-2.5 left-2.5">
@@ -359,7 +319,7 @@ export default function Sites() {
                     {/* Content - Compact */}
                     <div style={{ padding: 'var(--spacing-lg)' }}>
                       <h3 className="card-title mb-1.5 group-hover:text-primary transition-colors">
-                        {site.name}
+                        {site.label}
                       </h3>
                       <div className="flex items-start label-secondary mb-3">
                         <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0 mt-0.5" />
@@ -369,18 +329,14 @@ export default function Sites() {
                       <div className="flex items-center gap-3 label-secondary mb-3">
                         <span>{site.surface.toLocaleString()} m²</span>
                         <span>•</span>
-                        <span>{site.type}</span>
+                        <span>{typeof site.siteType === 'object' ? site.siteType?.label : 'N/A'}</span>
                       </div>
                       
                       {/* 3 KPIs - Compact */}
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="bg-muted/50 rounded-lg" style={{ padding: 'var(--spacing-sm)' }}>
                           <p className="text-[11px] text-muted-foreground mb-0.5 leading-tight">Budget</p>
-                          <p className={cn(
-                            'text-base font-bold leading-tight',
-                            site.budgetUsed > 80 ? 'text-destructive' : 
-                            site.budgetUsed > 70 ? 'text-warning' : 'text-success'
-                          )}>
+                          <p className={cn('text-base font-bold leading-tight', getBudgetColor(site.budgetUsed))}>
                             {site.budgetUsed}%
                           </p>
                         </div>
@@ -413,7 +369,7 @@ export default function Sites() {
                               site.status === 'alert' && 'border-destructive text-destructive'
                             )}
                           >
-                            {site.status === 'good' ? 'Bon' : site.status === 'warning' ? 'Attention' : 'Alerte'}
+                            {getStatusLabel(site.status)}
                           </Badge>
                         </div>
                       </div>
@@ -439,8 +395,8 @@ export default function Sites() {
                   >
                     <div className="relative w-28 h-28 rounded-lg overflow-hidden flex-shrink-0">
                       <img 
-                        src={site.image} 
-                        alt={site.name} 
+                        src={site.imageUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab'} 
+                        alt={site.label} 
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                       <div className="absolute top-1.5 left-1.5">
@@ -457,7 +413,7 @@ export default function Sites() {
                       <div className="flex items-start justify-between mb-1.5">
                         <div>
                           <h3 className="card-title group-hover:text-primary transition-colors">
-                            {site.name}
+                            {site.label}
                           </h3>
                           <div className="flex items-center label-secondary mt-0.5">
                             <MapPin className="w-3.5 h-3.5 mr-1" />
@@ -472,11 +428,7 @@ export default function Sites() {
                       <div className="flex items-center gap-6 mt-3">
                         <div>
                           <p className="text-[11px] text-muted-foreground mb-0.5">Budget consommé</p>
-                          <p className={cn(
-                            'text-sm font-bold',
-                            site.budgetUsed > 80 ? 'text-destructive' : 
-                            site.budgetUsed > 70 ? 'text-warning' : 'text-success'
-                          )}>
+                          <p className={cn('text-sm font-bold', getBudgetColor(site.budgetUsed))}>
                             {site.budgetUsed}%
                           </p>
                         </div>
