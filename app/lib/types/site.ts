@@ -14,6 +14,15 @@ export interface SiteType {
   icon: string;
 }
 
+export interface AssetType {
+  '@id': string;
+  '@type': string;
+  id: number;
+  label: string;
+  code: string;
+  description: string;
+}
+
 export interface Site {
   '@id': string;
   '@type': string;
@@ -32,6 +41,7 @@ export interface Site {
   aiMessage: string | null;
   city: string;
   siteType: string | SiteType; // IRI ou objet complet
+  assetType: string | AssetType | null; // IRI ou objet complet
   reservations: string[]; // IRIs des réservations
   contracts: string[]; // IRIs des contrats
 }
