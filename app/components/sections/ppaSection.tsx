@@ -2,9 +2,9 @@ import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Hammer, Calendar, CheckCircle, Clock } from 'lucide-react';
-import { SiteDetails } from '@/app/sites/[id]/page';
+import type { Site } from '@/app/lib/types/site';
 
-export const PPASection = ({ site }:{site:SiteDetails}) => {
+export const PPASection = ({ site }:{site:Site}) => {
 
     interface PPAProject {
       id: number;

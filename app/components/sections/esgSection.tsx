@@ -4,9 +4,9 @@ import { Button } from '../ui/button';
 import { Leaf, Droplets, Zap, Recycle, TrendingUp, Download} from 'lucide-react';
 import { Progress } from '../ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { SiteDetails } from '@/app/sites/[id]/page';
+import type { Site } from '@/app/lib/types/site';
 
-export const ESGSection = ({ site }:{site:SiteDetails}) => {
+export const ESGSection = ({ site }:{site:Site}) => {
   const esgMetrics = [
     { category: 'Environnement', score: 85, icon: Leaf, color: 'text-success' },
     { category: 'Social', score: 78, icon: Users, color: 'text-primary' },

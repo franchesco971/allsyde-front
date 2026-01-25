@@ -5,7 +5,7 @@ import { Card } from '../ui/card';
 import { Upload, FileText, Check, X, AlertCircle, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 // import { Progress } from '../ui/progress';
-import { SiteDetails } from '@/app/sites/[id]/page';
+import type { Site } from '@/app/lib/types/site';
 import { Progress } from '../ui/progress';
 
 type DeviseStatus = 'pending' | 'approved' | 'rejected';
@@ -30,7 +30,7 @@ interface AIAnalysis {
   confidence: number;
 }
 
-export const DevisSection: React.FC<{ site: SiteDetails }> = ({ site }) => {
+export const DevisSection: React.FC<{ site: Site }> = ({ site }) => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);

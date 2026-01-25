@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Activity,ChevronRight, TrendingUp } from 'lucide-react';
 import { cn } from '@/app/lib/util';
-import { SiteDetails } from '@/app/sites/[id]/page';
+import type { Site } from '@/app/lib/types/site';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 
-export const OverviewSection = ({ site }:{site:SiteDetails}) => {
+export const OverviewSection = ({ site }:{site:Site}) => {
   const [cockpitOpen, setCockpitOpen] = useState(false);
   
   // Données IA Transversale (compactes)

@@ -11,63 +11,67 @@ import { PrestatairesSection } from '@/app/components/sections/prestatairesSecti
 import { RisquesSection } from '@/app/components/sections/risquesSection';
 import Sidebar from '@/app/components/sideBar';
 import { useParams, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSite } from '@/app/lib/hooks';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/app/components/ui/button';
+import { ProtectedRoute } from '@/app/lib/ProtectedRoute';
 
-export interface SiteDetails {
-  id: string;
-  name: string;
-  address: string;
-  surface: number;
-  type: string;
-  esgScore: number;
-  status: 'good' | 'warning' | 'critical';
-  assetType: string;
-  activity: string;
-  riskLevel: string;
-}
-
-const mockSiteDetails: Record<string, SiteDetails> = {
-  '1': {
-    id: '1',
-    name: 'Tour Montparnasse',
-    address: '33 Avenue du Maine, 75015 Paris',
-    surface: 12500,
-    type: 'Bureau',
-    esgScore: 82,
-    status: 'good',
-    assetType: 'IGH',
-    activity: 'Tertiaire',
-    riskLevel: 'élevé',
-  },
-  '2': {
-    id: '2',
-    name: 'Centre Commercial Lyon Part-Dieu',
-    address: '17 Rue du Docteur Bouchut, 69003 Lyon',
-    surface: 28000,
-    type: 'Commerce',
-    esgScore: 75,
-    status: 'warning',
-    assetType: 'ERP',
-    activity: 'Commerce',
-    riskLevel: 'critique',
-  },
-};
-
-export default function SiteDetail ({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+function SiteDetailContent() {
   const { id } = useParams<{id:string}>();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('overview');
   
-  const site = mockSiteDetails[id] || mockSiteDetails['1'];
+  const siteId = Number.parseInt(id);
+  const { site, isLoading, error, refetch } = useSite(siteId);
   
   useEffect(() => {
     const section = searchParams.get('section') || 'overview';
     setActiveSection(section);
   }, [searchParams]);
+  
+  // Gestion du chargement
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar level="site" siteId={id} />
+        <main className="flex-1 ml-64">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Chargement du site...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Gestion des erreurs
+  if (error || !site) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar level="site" siteId={id} />
+        <main className="flex-1 ml-64">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center max-w-md">
+              <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
+              <p className="text-muted-foreground mb-4">{error || 'Site introuvable'}</p>
+              <Button 
+                onClick={() => refetch()} 
+                className="bg-primary hover:bg-primary-hover text-primary-foreground"
+              >
+                Réessayer
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   
   const renderSection = () => {
     switch (activeSection) {
@@ -100,7 +104,7 @@ export default function SiteDetail ({
         {/* Header */}
         <header className="bg-card border-b border-border sticky top-0 z-10">
           <div className="px-8 py-6">
-            <h1 className="text-2xl font-bold text-foreground mb-1">{site.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-1">{site.label}</h1>
             <p className="text-sm text-muted-foreground">{site.address}</p>
           </div>
         </header>
@@ -112,4 +116,24 @@ export default function SiteDetail ({
       </main>
     </div>
   );
-};
+}
+
+export default function SiteDetail ({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  return (
+    <ProtectedRoute>
+      <Suspense fallback={
+        <div className="flex min-h-screen bg-background">
+          <div className="flex items-center justify-center w-full">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </div>
+      }>
+        <SiteDetailContent />
+      </Suspense>
+    </ProtectedRoute>
+  );
+}

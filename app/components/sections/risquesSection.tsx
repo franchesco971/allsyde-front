@@ -28,7 +28,7 @@ import {
   Users as UsersIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { SiteDetails } from "@/app/sites/[id]/page";
+import type { Site } from "@/app/lib/types/site";
 import RiskCartographyTab from "./risk/cartographyTab";
 import RiskReservesTab from "./risk/reservesTab";
 import RiskObligationsTab from "./risk/obligationsTab";
@@ -58,13 +58,19 @@ export interface StatusConfigType {
   };
 }
 
-export const RisquesSection = ({ site }: { site: SiteDetails }) => {
+export const RisquesSection = ({ site }: { site: Site }) => {
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  // Extraire le label de l'assetType (peut être un objet ou un IRI)
+  let assetTypeLabel = 'IGH';
+  if (site.assetType && typeof site.assetType !== 'string') {
+    assetTypeLabel = site.assetType.label;
+  }
+
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({
-    assetType: site.assetType || "IGH",
+    assetType: assetTypeLabel,
     activity: site.activity || "Tertiaire",
     riskLevel: site.riskLevel || "élevé",
   });

@@ -5,9 +5,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { FileText, Image, File, Download, Eye, Search, Upload, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
-import { SiteDetails } from '@/app/sites/[id]/page';
+import type { Site } from '@/app/lib/types/site';
 
-export const DocumentsSection = ({ site }:{site:SiteDetails}) => {
+export const DocumentsSection = ({ site }:{site:Site}) => {
   const [searchQuery, setSearchQuery] = useState('');
   
   const documents = [

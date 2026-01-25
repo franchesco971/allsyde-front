@@ -8,9 +8,9 @@ import { Upload, FileText, AlertCircle, Download, Eye, Calendar, Sparkles, Trend
 import { toast } from 'sonner';
 import { Progress } from '../ui/progress';
 import { AIInsightBadge } from '../aIInsightBadge';
-import { SiteDetails } from '@/app/sites/[id]/page';
+import type { Site } from '@/app/lib/types/site';
 
-export const ContratsSection = ({ site }:{site:SiteDetails}) => {
+export const ContratsSection = ({ site }:{site:Site}) => {
   const [activeTab, setActiveTab] = useState('liste');
   const [analyzingContract, setAnalyzingContract] = useState<number | null>(null);
 
