@@ -15,6 +15,7 @@ import {
   RiskHeader,
 } from "./risk";
 import { useReservations } from "@/app/lib/hooks";
+import { useDuties } from "@/app/lib/hooks/useDuties";
 
 export interface SiteConfig {
   assetType: string;
@@ -47,6 +48,9 @@ export const RisquesSection = ({ site }: { site: Site }) => {
 
   // Charger les réservations du site
   const { reservations, isLoading: reservationsLoading, error: reservationsError } = useReservations(site.id);
+
+  // Charger les obligations du site
+  const { duties, isLoading: dutiesLoading, error: dutiesError } = useDuties(site.id);
 
   // Extraire le label de l'assetType (peut être un objet ou un IRI)
   let assetTypeLabel = 'IGH';
@@ -253,12 +257,35 @@ export const RisquesSection = ({ site }: { site: Site }) => {
       )}
 
       {activeTab === "obligations" && (
-        <RiskObligationsTab
-          siteConfig={siteConfig}
-          currentObligations={currentObligations}
-          statusConfig={statusConfig}
-          handleImport={handleImport}
-        />
+        <>
+          {dutiesLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <span className="ml-3 text-muted-foreground">Chargement des obligations...</span>
+            </div>
+          )}
+          
+          {dutiesError && (
+            <Card className="p-8 bg-destructive/10 border-destructive/20">
+              <div className="flex flex-col items-center justify-center text-center space-y-4">
+                <AlertTriangle className="w-12 h-12 text-destructive" />
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Erreur de chargement</h3>
+                  <p className="text-sm text-muted-foreground">{dutiesError}</p>
+                </div>
+              </div>
+            </Card>
+          )}
+          
+          {!dutiesLoading && !dutiesError && (
+            <RiskObligationsTab
+              assetType={siteConfig.assetType}
+              duties={duties}
+              statusConfig={statusConfig}
+              handleImport={handleImport}
+            />
+          )}
+        </>
       )}
 
       {activeTab === "reserves" && (

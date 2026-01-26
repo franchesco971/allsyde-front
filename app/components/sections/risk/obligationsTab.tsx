@@ -2,10 +2,22 @@ import { Bell, History, RefreshCw, ShieldAlert, Upload } from "lucide-react";
 import { Card } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
-import { Obligation, SiteConfig, StatusConfigType } from "../risquesSection";
+import { Duty } from "@/app/lib/api/duties.service";
+import { StatusConfigType } from "../risquesSection";
 
-export default function RiskObligationsTab({siteConfig, currentObligations, statusConfig,handleImport}:
-    Readonly<{siteConfig:SiteConfig, currentObligations:Obligation[] ,statusConfig:StatusConfigType, handleImport:()=>void}>) {
+interface ObligationsTabProps {
+  assetType: string;
+  duties: Duty[];
+  statusConfig: StatusConfigType;
+  handleImport: () => void;
+}
+
+export default function RiskObligationsTab({ assetType, duties, statusConfig, handleImport }: Readonly<ObligationsTabProps>) {
+  // Formater les dates
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
   return (
     <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -14,11 +26,11 @@ export default function RiskObligationsTab({siteConfig, currentObligations, stat
                 <ShieldAlert className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-1">
-                    Obligations adaptées au type d'actif : {siteConfig.assetType}
+                    Obligations adaptées au type d'actif : {assetType}
                   </h4>
                   <p className="text-xs text-muted-foreground">
                     Les obligations réglementaires affichées correspondent automatiquement à votre configuration.
-                    {currentObligations.length} contrôles actifs.
+                    {duties.length} contrôles actifs.
                   </p>
                 </div>
               </div>
@@ -30,34 +42,34 @@ export default function RiskObligationsTab({siteConfig, currentObligations, stat
           </div>
 
           <div className="space-y-3">
-            {currentObligations.map((obligation) => {
-              const status = statusConfig[obligation.status];
+            {duties.map((duty) => {
+              const status = statusConfig[duty.status];
               const StatusIcon = status.icon;
 
               return (
-                <Card key={obligation.id} className="p-5 hover:shadow-md transition-smooth">
+                <Card key={duty.id} className="p-5 hover:shadow-md transition-smooth">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h4 className="text-sm font-semibold text-foreground">{obligation.name}</h4>
+                        <h4 className="text-sm font-semibold text-foreground">{duty.name}</h4>
                         <Badge className={status.color}>
                           {StatusIcon ? <StatusIcon className="w-3 h-3 mr-1" /> : null}
                           {status.label}
                         </Badge>
-                        <Badge variant="outline">{obligation.category}</Badge>
+                        <Badge variant="outline">{duty.category}</Badge>
                       </div>
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Fréquence</p>
-                          <p className="font-medium text-foreground">{obligation.frequency}</p>
+                          <p className="font-medium text-foreground">{duty.frequency}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Prochain contrôle</p>
-                          <p className="font-medium text-foreground">{obligation.nextDate}</p>
+                          <p className="font-medium text-foreground">{formatDate(duty.nextDate)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Dernière MAJ</p>
-                          <p className="text-xs text-muted-foreground">{obligation.lastUpdate}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(duty.lastUpdate)}</p>
                         </div>
                       </div>
                     </div>
