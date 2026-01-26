@@ -1,18 +1,92 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card } from '../ui/card';
-// import { AIInsightBadge } from '../AIInsightBadge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Upload, FileText, AlertCircle, Download, Eye, Calendar, Sparkles, TrendingDown, BarChart3 } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Download, Eye, Calendar, Sparkles, TrendingDown, BarChart3, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from '../ui/progress';
-import { AIInsightBadge } from '../aIInsightBadge';
 import type { Site } from '@/app/lib/types/site';
+import { useContracts } from '@/app/lib/hooks';
+import { getProvider, type Provider } from '@/app/lib/api/providers.service';
 
 export const ContratsSection = ({ site }:{site:Site}) => {
   const [activeTab, setActiveTab] = useState('liste');
   const [analyzingContract, setAnalyzingContract] = useState<number | null>(null);
+  const { contracts, isLoading, error, refetch } = useContracts(site.id);
+  const [providers, setProviders] = useState<Record<number, Provider>>({});
+
+  // Charger les prestataires pour les contrats
+  useEffect(() => {
+    const fetchProviders = async () => {
+      const providerIds = new Set<number>();
+      const providerRegex = /\/api\/providers\/(\d+)/;
+      
+      contracts.forEach(contract => {
+        // Extraire l'ID du provider depuis l'IRI (ex: "/api/providers/1" -> 1)
+        const match = providerRegex.exec(contract.provider);
+        if (match) {
+          providerIds.add(Number.parseInt(match[1], 10));
+        }
+      });
+
+      // Charger tous les providers nécessaires
+      const providerPromises = Array.from(providerIds).map(async (id) => {
+        try {
+          const provider = await getProvider(id);
+          return { id, provider };
+        } catch (err) {
+          console.error(`Erreur lors du chargement du provider ${id}:`, err);
+          return null;
+        }
+      });
+
+      const providerResults = await Promise.all(providerPromises);
+      const providersMap: Record<number, Provider> = {};
+      
+      providerResults.forEach(result => {
+        if (result) {
+          providersMap[result.id] = result.provider;
+        }
+      });
+
+      setProviders(providersMap);
+    };
+
+    if (contracts.length > 0) {
+      fetchProviders();
+    }
+  }, [contracts]);
+
+  // Calculer le statut d'un contrat selon ses dates
+  const getContractStatus = (endDate: string): 'active' | 'expiring' | 'expired' => {
+    const today = new Date();
+    const end = new Date(endDate);
+    const daysUntilExpiry = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntilExpiry < 0) return 'expired';
+    if (daysUntilExpiry <= 60) return 'expiring';
+    return 'active';
+  };
+
+  // Calculer les jours avant expiration
+  const getDaysUntilExpiry = (endDate: string): number => {
+    const today = new Date();
+    const end = new Date(endDate);
+    return Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  // Extraire l'ID du provider depuis l'IRI
+  const getProviderId = (providerIri: string): number | null => {
+    const providerRegex = /\/api\/providers\/(\d+)/;
+    const match = providerRegex.exec(providerIri);
+    return match ? Number.parseInt(match[1], 10) : null;
+  };
+
+  // Formater les dates
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('fr-FR');
+  };
 
   interface Contrat {
     id: number;
@@ -148,6 +222,41 @@ export const ContratsSection = ({ site }:{site:Site}) => {
   
   const duplicatesCount = mockContrats.filter(c => c.aiDuplicate).length;
   
+  // Contrats avec échéance proche (moins de 60 jours)
+  const expiringContracts = contracts.filter(c => {
+    const daysUntil = getDaysUntilExpiry(c.endDate);
+    return daysUntil > 0 && daysUntil <= 60;
+  });
+  
+  // Si chargement
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Chargement des contrats...</span>
+      </div>
+    );
+  }
+
+  // Si erreur
+  if (error) {
+    return (
+      <Card className="p-8 bg-destructive/10 border-destructive/20">
+        <div className="flex flex-col items-center justify-center text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-destructive" />
+          <div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Erreur de chargement</h3>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+          </div>
+          <Button onClick={refetch} variant="outline">
+            Réessayer
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  
   return (
     <div className="space-y-6">
       {/* Header Actions */}
@@ -213,22 +322,57 @@ export const ContratsSection = ({ site }:{site:Site}) => {
       {activeTab === 'liste' && (
         <div className="space-y-4">
           {/* Alert for expiring contracts */}
-          <Card className="p-4 bg-warning/10 border-warning/20">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold text-foreground mb-1">1 contrat arrive à échéance</h3>
-                <p className="text-sm text-muted-foreground">
-                  Le contrat Securitas France expire dans 45 jours. Pensez à renouveler ou renégocier.
-                </p>
+          {expiringContracts.length > 0 && (
+            <Card className="p-4 bg-warning/10 border-warning/20">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    {expiringContracts.length} contrat{expiringContracts.length > 1 ? 's arrivent' : ' arrive'} à échéance
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {expiringContracts.map((contract, idx) => {
+                      const providerId = getProviderId(contract.provider);
+                      const providerLabel = providerId && providers[providerId] 
+                        ? providers[providerId].label 
+                        : 'Prestataire inconnu';
+                      const days = getDaysUntilExpiry(contract.endDate);
+                      return idx === 0 
+                        ? `Le contrat ${providerLabel} expire dans ${days} jours. Pensez à renouveler ou renégocier.`
+                        : '';
+                    }).filter(Boolean).join(' ')}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
+          
+          {/* Message si aucun contrat */}
+          {contracts.length === 0 && (
+            <Card className="p-8 bg-muted/50">
+              <div className="flex flex-col items-center justify-center text-center space-y-3">
+                <FileText className="w-12 h-12 text-muted-foreground/50" />
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-1">Aucun contrat</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Aucun contrat n'est enregistré pour ce site.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
           
           {/* Contracts List */}
           <div className="space-y-4">
-            {mockContrats.map((contrat) => (
-              <Card key={contrat.id} className="p-6 hover:shadow-md transition-smooth">
+            {contracts.map((contract) => {
+              const providerId = getProviderId(contract.provider);
+              const providerData = providerId ? providers[providerId] : null;
+              const providerLabel = providerData?.label || 'Chargement...';
+              const status = getContractStatus(contract.endDate);
+              const daysUntilExpiry = getDaysUntilExpiry(contract.endDate);
+              
+              return (
+              <Card key={contract.id} className="p-6 hover:shadow-md transition-smooth">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start space-x-4 flex-1">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -236,35 +380,39 @@ export const ContratsSection = ({ site }:{site:Site}) => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-base font-semibold text-foreground">{contrat.provider}</h3>
-                        <Badge className={statusConfig[contrat.status].color}>
-                          {statusConfig[contrat.status].label}
+                        <h3 className="text-base font-semibold text-foreground">{providerLabel}</h3>
+                        <Badge className={statusConfig[status].color}>
+                          {statusConfig[status].label}
                         </Badge>
-                        {contrat.renewal === 'auto' && (
-                          <Badge variant="outline" className="text-xs">RecoanalyzingContractnduction auto</Badge>
-                        )}
-                        {contrat.aiDuplicate && (
-                          <AIInsightBadge message="Doublon détecté" variant="warning" />
-                        )}
+                        {/* Note: renewal et aiDuplicate ne sont pas dans l'API actuellement */}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{contrat.lot}</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {contract.reference || 'Référence non renseignée'}
+                      </p>
                       
                       <div className="grid grid-cols-3 gap-4">
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Montant annuel</p>
                           <p className="text-sm font-semibold text-foreground">
-                            {contrat.amount.toLocaleString()} €
+                            {Number.parseFloat(contract.amount).toLocaleString('fr-FR')} €
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Début</p>
-                          <p className="text-sm font-medium text-foreground">{contrat.startDate}</p>
+                          <p className="text-sm font-medium text-foreground">{formatDate(contract.startDate)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Fin</p>
-                          <p className="text-sm font-medium text-foreground">{contrat.endDate}</p>
+                          <p className="text-sm font-medium text-foreground">{formatDate(contract.endDate)}</p>
                         </div>
                       </div>
+                      
+                      {contract.description && (
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <p className="text-xs text-muted-foreground mb-1">Description</p>
+                          <p className="text-sm text-foreground">{contract.description}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -274,49 +422,49 @@ export const ContratsSection = ({ site }:{site:Site}) => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => handleAnalyzeContract(contrat.id)}
-                          disabled={analyzingContract === contrat.id}
+                          onClick={() => handleAnalyzeContract(contract.id)}
+                          disabled={analyzingContract === contract.id}
                         >
                           <Sparkles className="w-4 h-4 mr-2" />
-                          {analyzingContract === contrat.id ? 'Analyse...' : 'Analyser par IA'}
+                          {analyzingContract === contract.id ? 'Analyse...' : 'Analyser par IA'}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                          <DialogTitle>Analyse IA du contrat - {contrat.provider}</DialogTitle>
+                          <DialogTitle>Analyse IA du contrat - {providerLabel}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                           <div className="grid grid-cols-2 gap-4">
                             <Card className="p-4 bg-muted/50">
-                              <p className="text-xs text-muted-foreground mb-1">Prestations incluses</p>
-                              <p className="text-lg font-bold text-foreground">12</p>
+                              <p className="text-xs text-muted-foreground mb-1">Montant</p>
+                              <p className="text-lg font-bold text-foreground">
+                                {Number.parseFloat(contract.amount).toLocaleString('fr-FR')} €
+                              </p>
                             </Card>
                             <Card className="p-4 bg-muted/50">
-                              <p className="text-xs text-muted-foreground mb-1">Fréquence</p>
-                              <p className="text-lg font-bold text-foreground">Mensuelle</p>
+                              <p className="text-xs text-muted-foreground mb-1">Jours restants</p>
+                              <p className="text-lg font-bold text-foreground">{daysUntilExpiry}</p>
                             </Card>
                           </div>
                           
                           <div>
-                            <h4 className="text-sm font-semibold text-foreground mb-2">Alertes détectées</h4>
+                            <h4 className="text-sm font-semibold text-foreground mb-2">Informations du contrat</h4>
                             <div className="space-y-2">
-                              {contrat.aiDuplicate && (
-                                <div className="flex items-start space-x-2 p-3 bg-warning/10 rounded-lg">
-                                  <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
+                              {contract.reference && (
+                                <div className="flex items-start space-x-2 p-3 bg-primary/10 rounded-lg">
+                                  <FileText className="w-4 h-4 text-primary mt-0.5" />
                                   <div>
-                                    <p className="text-sm font-medium text-foreground">Doublon détecté</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {(contrat.duplicateAmount ?? 0).toLocaleString()} € facturés hors contrat alors qu'inclus
-                                    </p>
+                                    <p className="text-sm font-medium text-foreground">Référence</p>
+                                    <p className="text-xs text-muted-foreground">{contract.reference}</p>
                                   </div>
                                 </div>
                               )}
                               <div className="flex items-start space-x-2 p-3 bg-primary/10 rounded-lg">
                                 <Sparkles className="w-4 h-4 text-primary mt-0.5" />
                                 <div>
-                                  <p className="text-sm font-medium text-foreground">Seuils et clauses</p>
+                                  <p className="text-sm font-medium text-foreground">Période du contrat</p>
                                   <p className="text-xs text-muted-foreground">
-                                    Indexation annuelle: +2.5% | Plafond dépassement: 10%
+                                    Du {formatDate(contract.startDate)} au {formatDate(contract.endDate)}
                                   </p>
                                 </div>
                               </div>
@@ -337,13 +485,13 @@ export const ContratsSection = ({ site }:{site:Site}) => {
                 </div>
                 
                 {/* Expiry warning */}
-                {contrat.status === 'expiring' && (
+                {status === 'expiring' && (
                   <div className="mt-4 pt-4 border-t border-border">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-warning" />
                         <span className="text-sm text-muted-foreground">
-                          Échéance dans <span className="font-semibold text-foreground">{contrat.daysUntilExpiry} jours</span>
+                          Échéance dans <span className="font-semibold text-foreground">{daysUntilExpiry} jours</span>
                         </span>
                       </div>
                       <Button size="sm" variant="outline">
@@ -353,26 +501,27 @@ export const ContratsSection = ({ site }:{site:Site}) => {
                   </div>
                 )}
                 
-                {/* AI Analysis Info */}
-                <div className="mt-4 bg-muted/50 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        <span className="font-semibold text-foreground">Analyse IA:</span> Contrat importé automatiquement
-                      </p>
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                        <span>• Imputation: Budget {contrat.lot}</span>
-                        <span>• Hors contrat: {contrat.outOfContract.toLocaleString()} €</span>
+                {/* Contract metadata */}
+                {(contract.reference || contract.description) && (
+                  <div className="mt-4 bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground mb-2">
+                          <span className="font-semibold text-foreground">Informations:</span>
+                        </p>
+                        <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
+                          {contract.reference && <span>• Référence: {contract.reference}</span>}
+                          {contract.description && (
+                            <span>• {contract.description.substring(0, 100)}{contract.description.length > 100 ? '...' : ''}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <AIInsightBadge 
-                      message={`Ratio ${((contrat.outOfContract / contrat.amount) * 100).toFixed(0)}%`}
-                      variant={contrat.outOfContract / contrat.amount > 0.2 ? 'warning' : 'success'}
-                    />
                   </div>
-                </div>
+                )}
               </Card>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
