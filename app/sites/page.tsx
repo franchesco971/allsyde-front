@@ -22,8 +22,6 @@ interface SiteDisplay extends APISite {
 function SitesContent() {
   const router = useRouter();
   const { sites: apiSites, siteTypes, isLoading, error } = useSites();
-
-  console.log('API Sites:', apiSites);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCity, setFilterCity] = useState('all');

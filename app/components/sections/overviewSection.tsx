@@ -179,7 +179,7 @@ export const OverviewSection = ({ site }:{site:Site}) => {
                   </div>
                   <span className={cn('text-[22px] font-bold', item.color)}>
                     {item.value}
-                  </span>DialogTitle
+                  </span>
                 </div>
               ))}
             </div>

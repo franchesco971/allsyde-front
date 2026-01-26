@@ -65,6 +65,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
   // Gestion de l'authentification expirée
   if (response.status === 401) {
     clearAuthToken();
+    
+    // Rediriger vers la page de login si on est côté client
+    if (globalThis.window !== undefined) {
+      const currentPath = globalThis.window.location.pathname;
+      const redirectParam = currentPath === '/login' ? '' : `?redirect=${encodeURIComponent(currentPath)}`;
+      globalThis.window.location.href = `/login${redirectParam}`;
+    }
+    
     throw new ApiError(401, 'Unauthorized', 'Authentication required');
   }
 
