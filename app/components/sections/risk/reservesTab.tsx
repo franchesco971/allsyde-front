@@ -5,93 +5,57 @@ import { Badge } from "../../ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { Reservation } from "@/app/lib/api/reservations.service";
 
-export default function RiskReservesTab() {
+interface ReservesTabProps {
+  readonly reservations: Reservation[];
+}
+
+export default function RiskReservesTab({ reservations }: ReservesTabProps) {
+
+  console.log('Reservations dans ReservesTab:', reservations);
 
   const [reserveFilter, setReserveFilter] = useState('all');
 
-  type ReserveStatus = 'en-cours' | 'cloturee' | 'en-attente';
+  type ReserveStatus = 'open' | 'closed' | 'pending' | 'in_progress';
 
   type ReserveStatusConfig = {
     [key in ReserveStatus]: { label: string; color: string };
   };
 
-  type Severity = 'critique' | 'majeure' | 'mineure';
+  type Severity = 'low' | 'medium' | 'high' | 'critical';
 
-  interface Reserve {
-    id: number;
-    description: string;
-    severity: Severity;
-    detectedDate: string;
-    category: string;
-    provider: string;
-    status: ReserveStatus;
-    proof: string;
-    dueDate: string;
-    aiAssigned: boolean;
-  }
-
-  const severityConfig: Record<Severity, { label: string; color: string }> = {
-    critique: { label: 'Critique', color: 'bg-destructive text-destructive-foreground' },
-    majeure: { label: 'Majeure', color: 'bg-warning text-warning-foreground' },
-    mineure: { label: 'Mineure', color: 'bg-muted text-muted-foreground' },
+  const severityConfig: Record<string, { label: string; color: string }> = {
+    low: { label: 'Mineure', color: 'bg-muted text-muted-foreground' },
+    medium: { label: 'Modérée', color: 'bg-blue-100 text-blue-800' },
+    high: { label: 'Majeure', color: 'bg-warning text-warning-foreground' },
+    critical: { label: 'Critique', color: 'bg-destructive text-destructive-foreground' },
   };
 
-  // Mock data pour les réserves
-  const reserves: Reserve[] = [
-    {
-      id: 1,
-      description: 'Détecteur SSI inopérant - Étage 12 Zone Est',
-      severity: 'majeure',
-      detectedDate: '2024-01-15',
-      category: 'Sécurité incendie',
-      provider: 'Vinci Sécurité',
-      status: 'en-cours',
-      proof: 'Photo reçue',
-      dueDate: '2024-02-15',
-      aiAssigned: true,
-    },
-    {
-      id: 2,
-      description: 'Issue de secours niveau -1 obstruée',
-      severity: 'critique',
-      detectedDate: '2024-01-10',
-      category: 'Sécurité incendie',
-      provider: 'Samsic Nettoyage',
-      status: 'cloturee',
-      proof: 'PV de levée joint',
-      dueDate: '2024-01-25',
-      aiAssigned: true,
-    },
-    {
-      id: 3,
-      description: 'Éclairage de sécurité défaillant - Hall principal',
-      severity: 'mineure',
-      detectedDate: '2024-01-20',
-      category: 'Électricité',
-      provider: 'Bouygues Énergies',
-      status: 'en-cours',
-      proof: 'En attente',
-      dueDate: '2024-03-01',
-      aiAssigned: true,
-    },
-  ];
+  const reserveStatusConfig: ReserveStatusConfig = {
+    'open': { label: 'Ouverte', color: 'bg-warning text-warning-foreground' },
+    'closed': { label: 'Clôturée', color: 'bg-success text-success-foreground' },
+    'pending': { label: 'En attente', color: 'bg-muted text-muted-foreground' },
+    'in_progress': { label: 'En cours', color: 'bg-blue-100 text-blue-800' },
+  };
 
-  const filteredReserves = reserves.filter(r => {
+  const filteredReserves = reservations.filter(r => {
     if (reserveFilter === 'all') return true;
-    if (reserveFilter === 'critiques') return r.severity === 'critique';
-    if (reserveFilter === 'en-cours') return r.status === 'en-cours';
-    if (reserveFilter === 'cloturee') return r.status === 'cloturee';
-    if (reserveFilter === 'ai-assigned') return r.aiAssigned;
+    if (reserveFilter === 'critiques') {
+      // Vérifier si la sévérité est critique ou haute
+      const severityCode = r.severity.code.toLowerCase();
+      return severityCode === 'critical' || severityCode === 'high';
+    }
+    if (reserveFilter === 'open') return r.status === 'open';
+    if (reserveFilter === 'closed') return r.status === 'closed';
     return true;
   });
 
-  const closedThisWeek = reserves.filter(r => r.status === 'cloturee').length;
+  const closedReservations = reservations.filter(r => r.status === 'closed').length;
 
-  const reserveStatusConfig:ReserveStatusConfig = {
-    'en-cours': { label: 'En cours', color: 'bg-warning text-warning-foreground' },
-    'cloturee': { label: 'Clôturée', color: 'bg-success text-success-foreground' },
-    'en-attente': { label: 'En attente', color: 'bg-muted text-muted-foreground' },
+  // Formater les dates
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('fr-FR');
   };
 
   const handleRelancePrestataire = (provider:string) => {
@@ -111,9 +75,8 @@ export default function RiskReservesTab() {
               <SelectContent>
                 <SelectItem value="all">Toutes</SelectItem>
                 <SelectItem value="critiques">Critiques</SelectItem>
-                <SelectItem value="en-cours">En cours</SelectItem>
-                <SelectItem value="cloturee">Clôturées</SelectItem>
-                <SelectItem value="ai-assigned">Assignées automatiquement</SelectItem>
+                <SelectItem value="open">Ouvertes</SelectItem>
+                <SelectItem value="closed">Clôturées</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -127,7 +90,7 @@ export default function RiskReservesTab() {
             <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-1">
-                {reserves.length} réserves détectées
+                {reservations.length} réserve{reservations.length > 1 ? 's' : ''} détectée{reservations.length > 1 ? 's' : ''}
               </h4>
               <p className="text-xs text-muted-foreground">
                 Suivi automatique avec assignation aux prestataires et notifications
@@ -138,64 +101,65 @@ export default function RiskReservesTab() {
 
         <div className="space-y-3">
           {filteredReserves.map((reserve) => {
-            const severity = severityConfig[reserve.severity];
-            const reserveStatus = reserveStatusConfig[reserve.status];
+            // Utiliser directement le code de sévérité de l'objet
+            const severityCode = reserve.severity.code || 'medium';
+            const severity = severityConfig[severityCode] || severityConfig['medium'];
+            const reserveStatus = reserveStatusConfig[reserve.status as ReserveStatus] || reserveStatusConfig['open'];
 
             return (
               <Card key={reserve.id} className="p-5 hover:shadow-md transition-smooth">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h4 className="text-sm font-semibold text-foreground">{reserve.description}</h4>
-                      <Badge className={severity.color}>{severity.label}</Badge>
+                      <h4 className="text-sm font-semibold text-foreground">{reserve.label}</h4>
+                      <Badge className={severity.color}>{reserve.severity.label}</Badge>
                       <Badge className={reserveStatus.color}>{reserveStatus.label}</Badge>
-                      {reserve.aiAssigned && (
-                        <Badge variant="outline" className="bg-primary/5 border-primary text-primary">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          IA : assigné à {reserve.provider}
-                        </Badge>
-                      )}
                     </div>
-                    <Badge variant="outline" className="mb-3">{reserve.category}</Badge>
+                    {reserve.comment && (
+                      <p className="text-xs text-muted-foreground mb-3">{reserve.comment}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-4 gap-4 text-sm mb-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Détection</p>
-                    <p className="font-medium text-foreground">{reserve.detectedDate}</p>
+                    <p className="font-medium text-foreground">{formatDate(reserve.detectedDate)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Échéance</p>
-                    <p className="font-medium text-foreground">{reserve.dueDate}</p>
+                    <p className="font-medium text-foreground">{formatDate(reserve.dueDate)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Prestataire</p>
-                    <p className="font-medium text-foreground">{reserve.provider}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Type</p>
+                    <p className="font-medium text-foreground text-xs">
+                      {reserve.reservationType.name}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Preuve</p>
-                    <p className="font-medium text-foreground">{reserve.proof}</p>
+                    <p className="font-medium text-foreground">{reserve.proof ? 'Fournie' : 'En attente'}</p>
                   </div>
                 </div>
 
-                <div className="bg-muted/50 rounded-lg p-3 mb-4">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">IA:</span> Assigné automatiquement à {reserve.provider}
-                    {reserve.status === 'cloturee' && ' • Levée vérifiée et archivée'}
-                  </p>
-                </div>
+                {reserve.comment && (
+                  <div className="bg-muted/50 rounded-lg p-3 mb-4">
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-semibold text-foreground">Commentaire:</span> {reserve.comment}
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-end space-x-2">
-                  {reserve.status !== 'cloturee' && (
+                  {reserve.status !== 'closed' && (
                     <>
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handleRelancePrestataire(reserve.provider)}
+                        onClick={() => handleRelancePrestataire(reserve.label)}
                       >
                         <Send className="w-4 h-4 mr-2" />
-                        Relancer prestataire
+                        Relancer
                       </Button>
                       <Button size="sm" variant="outline">
                         <ImageIcon className="w-4 h-4 mr-2" />
@@ -206,10 +170,10 @@ export default function RiskReservesTab() {
                       </Button>
                     </>
                   )}
-                  {reserve.status === 'cloturee' && (
+                  {reserve.status === 'closed' && (
                     <Button size="sm" variant="ghost">
                       <FileText className="w-4 h-4 mr-2" />
-                      Voir PV
+                      Voir preuve
                     </Button>
                   )}
                 </div>
@@ -223,9 +187,9 @@ export default function RiskReservesTab() {
           <div className="flex items-start space-x-3">
             <Sparkles className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-1">Résumé IA</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-1">Résumé</h4>
               <p className="text-sm text-muted-foreground">
-                {closedThisWeek} réserves critiques clôturées cette semaine – gain estimé : 4 h / gestionnaire technique
+                {closedReservations} réserve{closedReservations > 1 ? 's' : ''} clôturée{closedReservations > 1 ? 's' : ''} sur {reservations.length} total
               </p>
             </div>
           </div>

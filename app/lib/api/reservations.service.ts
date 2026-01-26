@@ -3,6 +3,24 @@
 
 import { httpGet, httpPost, httpPut, httpPatch, httpDelete, extractHydraMembers } from './http-client';
 
+export interface Severity {
+  '@id': string;
+  '@type': string;
+  id: number;
+  label: string;
+  code: string;
+  color: string | null;
+  priority: number | null;
+}
+
+export interface ReservationType {
+  '@id': string;
+  '@type': string;
+  id: number;
+  name: string;
+  description: string | null;
+}
+
 export interface Reservation {
   '@id': string;
   '@type': string;
@@ -10,11 +28,11 @@ export interface Reservation {
   label: string;
   comment: string;
   status: string;
-  severity: string;
+  severity: Severity;
   proof: string | null;
   detectedDate: string;
   dueDate: string;
-  reservationType: string;
+  reservationType: ReservationType;
   site: string;
 }
 
