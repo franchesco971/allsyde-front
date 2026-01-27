@@ -20,7 +20,7 @@ export interface Contract {
  * Récupère tous les contrats
  */
 export async function getContracts(): Promise<Contract[]> {
-  const response = await httpGet('/api/contracts');
+  const response = await httpGet('/contracts');
   return extractHydraMembers<Contract>(response);
 }
 
@@ -28,28 +28,28 @@ export async function getContracts(): Promise<Contract[]> {
  * Récupère un contrat par son ID
  */
 export async function getContract(id: number): Promise<Contract> {
-  return httpGet<Contract>(`/api/contracts/${id}`);
+  return httpGet<Contract>(`/contracts/${id}`);
 }
 
 /**
  * Crée un nouveau contrat
  */
 export async function createContract(contractData: Partial<Contract>): Promise<Contract> {
-  return httpPost<Contract>('/api/contracts', contractData);
+  return httpPost<Contract>('/contracts', contractData);
 }
 
 /**
  * Met à jour un contrat (modification partielle)
  */
 export async function updateContract(id: number, contractData: Partial<Contract>): Promise<Contract> {
-  return httpPatch<Contract>(`/api/contracts/${id}`, contractData);
+  return httpPatch<Contract>(`/contracts/${id}`, contractData);
 }
 
 /**
  * Supprime un contrat
  */
 export async function deleteContract(id: number): Promise<void> {
-  return httpDelete<void>(`/api/contracts/${id}`);
+  return httpDelete<void>(`/contracts/${id}`);
 }
 
 /**

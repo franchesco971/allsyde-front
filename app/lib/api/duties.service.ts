@@ -1,7 +1,6 @@
 import { getAuthToken } from './auth.service';
 import { extractHydraMembers } from './http-client';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:13080';
+import { API_CONFIG } from './config';
 
 export interface Duty {
   '@id': string;
@@ -36,7 +35,7 @@ export async function fetchDutiesBySite(siteId: number): Promise<Duty[]> {
     throw new Error('Token d\'authentification manquant');
   }
 
-  const response = await fetch(`${API_URL}/api/duties?site=${siteId}`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.PREFIX}/duties?site=${siteId}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -62,7 +61,7 @@ export async function createDuty(duty: Omit<Duty, '@id' | '@type' | 'id'>): Prom
     throw new Error('Token d\'authentification manquant');
   }
 
-  const response = await fetch(`${API_URL}/api/duties`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.PREFIX}/duties`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -88,7 +87,7 @@ export async function updateDuty(id: number, duty: Partial<Duty>): Promise<Duty>
     throw new Error('Token d\'authentification manquant');
   }
 
-  const response = await fetch(`${API_URL}/api/duties/${id}`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.PREFIX}/duties/${id}`, {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -114,7 +113,7 @@ export async function deleteDuty(id: number): Promise<void> {
     throw new Error('Token d\'authentification manquant');
   }
 
-  const response = await fetch(`${API_URL}/api/duties/${id}`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.PREFIX}/duties/${id}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,

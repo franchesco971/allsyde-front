@@ -2,8 +2,9 @@
 // Gère la configuration de base, les headers, et les erreurs
 
 import { getAuthToken, clearAuthToken } from './auth';
+import { API_CONFIG } from './config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:13080';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 /**
  * Erreur API personnalisée
@@ -108,7 +109,8 @@ export async function httpGet<T>(
   endpoint: string,
   options: HttpRequestOptions = {}
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_CONFIG.getFullUrl(endpoint);
+  const response = await fetch(url, {
     method: 'GET',
     ...options,
     headers: buildHeaders(options),
@@ -125,7 +127,8 @@ export async function httpPost<T>(
   data?: unknown,
   options: HttpRequestOptions = {}
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_CONFIG.getFullUrl(endpoint);
+  const response = await fetch(url, {
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined,
     ...options,
@@ -143,7 +146,8 @@ export async function httpPut<T>(
   data?: unknown,
   options: HttpRequestOptions = {}
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_CONFIG.getFullUrl(endpoint);
+  const response = await fetch(url, {
     method: 'PUT',
     body: data ? JSON.stringify(data) : undefined,
     ...options,
@@ -161,16 +165,12 @@ export async function httpPatch<T>(
   data?: unknown,
   options: HttpRequestOptions = {}
 ): Promise<T> {
-  const mergeHeaders = {
-    ...buildHeaders(options),
-    'Content-Type': 'application/merge-patch+json',
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_CONFIG.getFullUrl(endpoint);
+  const response = await fetch(url, {
     method: 'PATCH',
     body: data ? JSON.stringify(data) : undefined,
     ...options,
-    headers: mergeHeaders,
+    headers: buildHeaders(options),
   });
 
   return handleResponse<T>(response);
@@ -183,7 +183,8 @@ export async function httpDelete<T>(
   endpoint: string,
   options: HttpRequestOptions = {}
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_CONFIG.getFullUrl(endpoint);
+  const response = await fetch(url, {
     method: 'DELETE',
     ...options,
     headers: buildHeaders(options),
@@ -211,13 +212,14 @@ export async function httpUpload<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_CONFIG.getFullUrl(endpoint);
+  const response = await fetch(url, {
     method: 'POST',
     body: formData,
     ...options,
     headers: {
       ...headers,
-      ...(options.headers as Record<string, string> || {}),
+      ...(options.headers as Record<string, string>),
     },
   });
 
@@ -236,5 +238,6 @@ export function extractHydraMembers<T>(response: unknown): T[] {
  * Construit l'URL complète de l'API
  */
 export function buildApiUrl(endpoint: string): string {
-  return `${API_BASE_URL}${endpoint}`;
+  return API_CONFIG.getFullUrl(endpoint);
 }
+

@@ -20,7 +20,7 @@ export type { LoginCredentials, LoginResponse, CurrentUser };
  */
 export async function login(email: string, password: string): Promise<string> {
   const response = await httpPost<LoginResponse>(
-    '/api/login',
+    '/login',
     { email, password },
     { 
       requireAuth: false,
@@ -46,7 +46,7 @@ export function logout(): void {
  * Récupère les informations de l'utilisateur connecté
  */
 export async function getCurrentUser(): Promise<CurrentUser> {
-  return httpGet<CurrentUser>('/api/me', {
+  return httpGet<CurrentUser>('/me', {
     headers: {
       'Accept': 'application/json',
     }

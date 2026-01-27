@@ -40,7 +40,7 @@ export interface Reservation {
  * Récupère toutes les réserves
  */
 export async function getReservations(): Promise<Reservation[]> {
-  const response = await httpGet('/api/reservations');
+  const response = await httpGet('/reservations');
   return extractHydraMembers<Reservation>(response);
 }
 
@@ -48,35 +48,35 @@ export async function getReservations(): Promise<Reservation[]> {
  * Récupère une réserve par son ID
  */
 export async function getReservation(id: number): Promise<Reservation> {
-  return httpGet<Reservation>(`/api/reservations/${id}`);
+  return httpGet<Reservation>(`/reservations/${id}`);
 }
 
 /**
  * Crée une nouvelle réserve
  */
 export async function createReservation(reservationData: Partial<Reservation>): Promise<Reservation> {
-  return httpPost<Reservation>('/api/reservations', reservationData);
+  return httpPost<Reservation>('/reservations', reservationData);
 }
 
 /**
  * Met à jour une réserve (remplacement complet)
  */
 export async function updateReservation(id: number, reservationData: Partial<Reservation>): Promise<Reservation> {
-  return httpPut<Reservation>(`/api/reservations/${id}`, reservationData);
+  return httpPut<Reservation>(`/reservations/${id}`, reservationData);
 }
 
 /**
  * Met à jour une réserve (modification partielle)
  */
 export async function patchReservation(id: number, reservationData: Partial<Reservation>): Promise<Reservation> {
-  return httpPatch<Reservation>(`/api/reservations/${id}`, reservationData);
+  return httpPatch<Reservation>(`/reservations/${id}`, reservationData);
 }
 
 /**
  * Supprime une réserve
  */
 export async function deleteReservation(id: number): Promise<void> {
-  return httpDelete<void>(`/api/reservations/${id}`);
+  return httpDelete<void>(`/reservations/${id}`);
 }
 
 /**
