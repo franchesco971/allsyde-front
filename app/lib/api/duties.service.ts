@@ -1,4 +1,5 @@
 import { getAuthToken } from './auth.service';
+import { extractHydraMembers } from './http-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:13080';
 
@@ -48,7 +49,7 @@ export async function fetchDutiesBySite(siteId: number): Promise<Duty[]> {
   }
 
   const data: DutiesResponse = await response.json();
-  return data['hydra:member'];
+  return extractHydraMembers<Duty>(data);
 }
 
 /**
