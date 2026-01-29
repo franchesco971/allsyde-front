@@ -46,7 +46,7 @@ function SiteRisksContent({ params }: Props) {
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar level="site" siteId={id} />
+        <Sidebar slug={slug} siteId={id} />
         <main className="flex-1 ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
@@ -63,7 +63,7 @@ function SiteRisksContent({ params }: Props) {
   if (error || !site) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar level="site" siteId={id} />
+        <Sidebar slug={slug} siteId={id} />
         <main className="flex-1 ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center max-w-md">
@@ -118,7 +118,7 @@ function SiteRisksContent({ params }: Props) {
   
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar level="site" siteId={id} />
+      <Sidebar slug={slug} siteId={id} />
       
       <main className="flex-1 ml-64">
         {/* Header */}

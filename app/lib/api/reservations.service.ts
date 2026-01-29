@@ -83,19 +83,16 @@ export async function deleteReservation(id: number): Promise<void> {
  * Récupère les réserves d'un site
  */
 export async function getReservationsBySite(siteId: number): Promise<Reservation[]> {
-  const reservations = await getReservations();
-  return reservations.filter(reservation => {
-    const reservationSiteId = reservation.site.split('/').pop();
-    return parseInt(reservationSiteId || '0') === siteId;
-  });
+  const response = await httpGet(`/reservations?site=${siteId}`);
+  return extractHydraMembers<Reservation>(response);
 }
 
 /**
  * Récupère les réserves par statut
  */
 export async function getReservationsByStatus(status: string): Promise<Reservation[]> {
-  const reservations = await getReservations();
-  return reservations.filter(reservation => reservation.status === status);
+  const response = await httpGet(`/reservations?status=${status}`);
+  return extractHydraMembers<Reservation>(response);
 }
 
 /**

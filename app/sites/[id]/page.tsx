@@ -34,7 +34,7 @@ function SiteDetailContent() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar level="site" siteId={id} />
+        <Sidebar siteId={id} />
         <main className="flex-1 ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
@@ -51,7 +51,7 @@ function SiteDetailContent() {
   if (error || !site) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar level="site" siteId={id} />
+        <Sidebar siteId={id} />
         <main className="flex-1 ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center max-w-md">
@@ -84,7 +84,7 @@ function SiteDetailContent() {
       case 'ppa':
         return <PPASection site={site} />;
       case 'risques':
-        return <RisquesSection site={site} />;
+        // return <RisquesSection site={site} />;
       case 'prestataires':
         return <PrestatairesSection />;
       case 'documents':
@@ -98,7 +98,7 @@ function SiteDetailContent() {
   
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar level="site" siteId={id} />
+      <Sidebar siteId={id} />
       
       <main className="flex-1 ml-64">
         {/* Header */}

@@ -37,13 +37,14 @@ import { DropdownMenuTrigger,DropdownMenuContent, DropdownMenu, DropdownMenuItem
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
 interface SidebarProps {
-  level: 'admin' | 'provider' | 'global' | 'site'
+  // level: 'admin' | 'provider' | 'global' | 'site'
+  slug?: string
   siteId?: string
   selectedSite?: Site
   onSiteChange?: (site: Site) => void
 }
 
-export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteChange }: Readonly<SidebarProps>) {
+export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSiteChange }: Readonly<SidebarProps>) {
   const searchParams = useSearchParams();
   const { user, logout } = useAuthContext();
   const { sites } = useSites();
@@ -69,8 +70,9 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
     { icon: FileArchive, label: "Documents", section: "documents" , path: `/sites/${siteId}/risk/documents`},
   ];
 
-  const currentSection = searchParams.get('section');
-  const isInRiskModule = currentSection?.startsWith('risques');
+  // const currentSection = searchParams.get('section');
+  const currentSection = slug;
+  const isInRiskModule = riskSubPages.some(page => page.section === currentSection);
   const isSubPageActive = (section: string) => currentSection === section;
 
   return (
@@ -120,53 +122,53 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-80 p-2">
-                    {(Array.isArray(sites) ? sites : []).map((site: Site) => (
-                      <DropdownMenuItem
-                        key={site.id}
-                        className="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50"
-                        onClick={() => {
-                          onSiteChange?.(site)
-                          if (typeof globalThis.window !== 'undefined') {
-                            globalThis.window.location.href = `/sites/${site.id}`
-                          }
-                        }}
-                      >
-                        {/* <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
-                          {site.label.substring(0, 2).toUpperCase()}
-                        </div> */}
-                        <Building2 className="w-4 h-4 mr-2 text-slate-400" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">
-                            {site.label}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {typeof site.assetType === 'string' 
-                              ? site.assetType 
-                              : site.assetType?.label || 'Non défini'}
-                          </div>
-                        </div>
-                        {site.riskLevel === 'élevé' && (
-                          <div className="px-2 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
-                            Élevé
-                          </div>
-                        )}
-                        {site.riskLevel === 'critique' && (
-                          <div className="px-2 py-1 rounded-full bg-red-100 text-red-600 text-xs font-medium">
-                            Critique
-                          </div>
-                        )}
-                      </DropdownMenuItem>
-                    ))}
-                    
-                    <div className="mt-2 pt-2 border-t">
-                      <Link 
-                        href="/sites"
-                        className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Voir tous les sites
-                      </Link>
+              {(Array.isArray(sites) ? sites : []).map((site: Site) => (
+                <DropdownMenuItem
+                  key={site.id}
+                  className="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50"
+                  onClick={() => {
+                    onSiteChange?.(site)
+                    if (typeof globalThis.window !== 'undefined') {
+                      globalThis.window.location.href = `/sites/${site.id}`
+                    }
+                  }}
+                >
+                  {/* <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
+                    {site.label.substring(0, 2).toUpperCase()}
+                  </div> */}
+                  <Building2 className="w-4 h-4 mr-2 text-slate-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate">
+                      {site.label}
                     </div>
+                    <div className="text-sm text-gray-500 truncate">
+                      {typeof site.assetType === 'string' 
+                        ? site.assetType 
+                        : site.assetType?.label || 'Non défini'}
+                    </div>
+                  </div>
+                  {site.riskLevel === 'élevé' && (
+                    <div className="px-2 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
+                      Élevé
+                    </div>
+                  )}
+                  {site.riskLevel === 'critique' && (
+                    <div className="px-2 py-1 rounded-full bg-red-100 text-red-600 text-xs font-medium">
+                      Critique
+                    </div>
+                  )}
+                </DropdownMenuItem>
+              ))}
+              
+              <div className="mt-2 pt-2 border-t">
+                <Link 
+                  href="/sites"
+                  className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Voir tous les sites
+                </Link>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

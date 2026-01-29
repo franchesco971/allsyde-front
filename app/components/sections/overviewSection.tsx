@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Site } from "@/app/lib/types/site";
+import { getReservationsBySite, type Reservation } from "@/app/lib/api/reservations.service";
+import { fetchDutiesBySite, type Duty } from "@/app/lib/api/duties.service";
 
 interface KPIData {
   compliance_rate: number;
@@ -24,21 +26,6 @@ interface KPIData {
   reactivity_index: number;
 }
 
-interface Reserve {
-  id: number;
-  severity: string;
-  status: string;
-  description: string;
-  location?: string;
-}
-
-interface Obligation {
-  id: number;
-  name: string;
-  next_control?: string;
-  control_organism?: string;
-}
-
 interface Alert {
   type: string;
   message: string;
@@ -47,8 +34,8 @@ interface Alert {
 interface DashboardData {
   kpis: KPIData;
   alerts: Alert[];
-  recent_reserves: Reserve[];
-  upcoming_obligations: Obligation[];
+  recent_reserves: Reservation[];
+  upcoming_obligations: Duty[];
 }
 
 interface Priority {
@@ -61,16 +48,9 @@ interface Priority {
   href: string;
 }
 
-interface OverviewSectionProps {
-  params: {
-    id: string;
-  };
-}
-
 export const  OverviewSection = ({ site }:{site:Site}) => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  // const siteId = params.id;
   const siteId = site.id;
 
   useEffect(() => {
@@ -82,42 +62,90 @@ export const  OverviewSection = ({ site }:{site:Site}) => {
   const fetchDashboard = async () => {
     try {
       setLoading(true);
-      // TODO: Créer un service API pour le dashboard
-      // Pour l'instant, données mockées
-      const mockData: DashboardData = {
+      
+      // Récupération des réserves et obligations du site
+      const [reservations, duties] = await Promise.all([
+        getReservationsBySite(Number(siteId)),
+        fetchDutiesBySite(Number(siteId))
+      ]);
+
+      // Calcul des KPIs
+      const totalObligations = duties.length;
+      const conformes = duties.filter(d => d.status === 'conforme').length;
+      const complianceRate = totalObligations > 0 
+        ? Math.round((conformes / totalObligations) * 100) 
+        : 0;
+      
+      const criticalReserves = reservations.filter(
+        r => r.severity.code === 'critical' && r.status === 'open'
+      ).length;
+
+      // Obligations à venir dans les 30 prochains jours
+      const now = new Date();
+      const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const upcomingControls = duties.filter(d => {
+        const nextDate = new Date(d.nextDate);
+        return nextDate >= now && nextDate <= thirtyDaysLater;
+      }).length;
+
+      // Calcul de l'indice de réactivité (taux de clôture)
+      const closedReserves = reservations.filter(r => r.status === 'closed').length;
+      const reactivityIndex = reservations.length > 0
+        ? Math.round((closedReserves / reservations.length) * 100)
+        : 0;
+
+      // Génération des alertes
+      const alerts: Alert[] = [];
+      const upcomingDuties = duties.filter(d => {
+        const nextDate = new Date(d.nextDate);
+        const diffDays = Math.ceil((nextDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays >= 0 && diffDays <= 15;
+      });
+      
+      if (upcomingDuties.length > 0) {
+        const duty = upcomingDuties[0];
+        const nextDate = new Date(duty.nextDate);
+        alerts.push({
+          type: "control_proche",
+          message: `${duty.name} prévu le ${nextDate.toLocaleDateString('fr-FR')}`
+        });
+      }
+
+      // Réserves récentes (critiques en premier)
+      const recentReserves = [...reservations]
+        .sort((a, b) => {
+          // Trier par priorité de sévérité puis par date
+          const priorityA = a.severity.priority || 999;
+          const priorityB = b.severity.priority || 999;
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+          }
+          return new Date(b.detectedDate).getTime() - new Date(a.detectedDate).getTime();
+        })
+        .slice(0, 5);
+
+      // Obligations à venir (triées par date)
+      const upcomingObligations = duties
+        .filter(d => {
+          const nextDate = new Date(d.nextDate);
+          return nextDate >= now;
+        })
+        .sort((a, b) => new Date(a.nextDate).getTime() - new Date(b.nextDate).getTime())
+        .slice(0, 5);
+
+      setDashboardData({
         kpis: {
-          compliance_rate: 85,
-          conformes: 17,
-          total_obligations: 20,
-          critical_reserves: 2,
-          upcoming_controls: 5,
-          reactivity_index: 78
+          compliance_rate: complianceRate,
+          conformes,
+          total_obligations: totalObligations,
+          critical_reserves: criticalReserves,
+          upcoming_controls: upcomingControls,
+          reactivity_index: reactivityIndex
         },
-        alerts: [
-          {
-            type: "control_proche",
-            message: "Contrôle électrique prévu le 15 février"
-          }
-        ],
-        recent_reserves: [
-          {
-            id: 1,
-            severity: "critique",
-            status: "ouverte",
-            description: "Fissure importante mur porteur",
-            location: "Bâtiment A - RDC"
-          }
-        ],
-        upcoming_obligations: [
-          {
-            id: 1,
-            name: "Contrôle électrique annuel",
-            next_control: "2026-02-15",
-            control_organism: "Bureau Veritas"
-          }
-        ]
-      };
-      setDashboardData(mockData);
+        alerts,
+        recent_reserves: recentReserves,
+        upcoming_obligations: upcomingObligations
+      });
     } catch (error) {
       console.error("Error fetching dashboard:", error);
       toast.error("Erreur lors du chargement du tableau de bord");
@@ -142,23 +170,24 @@ export const  OverviewSection = ({ site }:{site:Site}) => {
   const priorities: Priority[] = [];
   
   // 1. Réserve critique
-  const criticalReserve = recent_reserves.find(r => r.severity === "critique" && r.status !== "cloturee");
+  const criticalReserve = recent_reserves.find(
+    r => r.severity.code === 'critical' && r.status === 'open'
+  );
   if (criticalReserve) {
     priorities.push({
       type: "reserve",
       icon: AlertTriangle,
       color: "red",
       title: "Réserve critique",
-      description: criticalReserve.description,
-      location: criticalReserve.location || null,
-      href: `/sites/${siteId}?section=risques-reserves`
+      description: criticalReserve.label,
+      location: criticalReserve.comment ? criticalReserve.comment.substring(0, 50) + '...' : null,
+      href: `/sites/${siteId}/risks/reserves`
     });
   }
 
   // 2. Obligation proche échéance
   const upcomingObligation = upcoming_obligations.find(o => {
-    if (!o.next_control) return false;
-    const date = new Date(o.next_control);
+    const date = new Date(o.nextDate);
     const now = new Date();
     const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays <= 30 && diffDays >= 0;
@@ -170,8 +199,8 @@ export const  OverviewSection = ({ site }:{site:Site}) => {
       color: "orange",
       title: "Échéance proche",
       description: upcomingObligation.name,
-      location: upcomingObligation.control_organism || null,
-      href: `/sites/${siteId}?section=risques-obligations`
+      location: upcomingObligation.category || null,
+      href: `/sites/${siteId}/risks/obligations`
     });
   }
 
@@ -185,7 +214,7 @@ export const  OverviewSection = ({ site }:{site:Site}) => {
       title: "Contrôle planifié",
       description: alert.message,
       location: null,
-      href: `/sites/${siteId}?section=risques-planning`
+      href: `/sites/${siteId}/risks/planning`
     });
   }
 
@@ -265,7 +294,7 @@ interface KPICardProps {
   testId: string;
 }
 
-function KPICard({ title, value, subtitle, icon: Icon, color, testId }: KPICardProps) {
+function KPICard({ title, value, subtitle, icon: Icon, color, testId }: Readonly<KPICardProps>) {
   const colorClasses = {
     teal: "bg-teal-50 text-[#00A69C]",
     red: "bg-red-50 text-red-600",
@@ -298,7 +327,7 @@ interface PriorityItemProps {
   priority: Priority;
 }
 
-function PriorityItem({ priority }: PriorityItemProps) {
+function PriorityItem({ priority }: Readonly<PriorityItemProps>) {
   const Icon = priority.icon;
   
   const colorClasses = {

@@ -156,7 +156,7 @@ function ObligationCard({ obligation, siteId }: ObligationCardProps) {
   };
 
   return (
-    <Link href={`/sites/${siteId}/risks/obligations/${obligation.id}`}>
+    <Link href={`/sites/${siteId}/duties/${obligation.id}`}>
       <Card
         className="bg-white rounded-xl border border-slate-100 shadow-sm cursor-pointer hover:shadow-md hover:border-slate-200 transition-all"
         data-testid="obligation-card"

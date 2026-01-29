@@ -83,7 +83,7 @@ function SitesContent() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar level="global" />
+        <Sidebar />
         <main className="flex-1 ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
@@ -100,7 +100,7 @@ function SitesContent() {
   if (error) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar level="global" />
+        <Sidebar />
         <main className="flex-1 ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center max-w-md">
@@ -124,7 +124,7 @@ function SitesContent() {
   
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar level="global" />
+      <Sidebar />
       
       <main className="flex-1 ml-64">
         {/* Header - Utilisation du composant */}
