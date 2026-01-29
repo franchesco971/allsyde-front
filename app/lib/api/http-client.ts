@@ -112,6 +112,7 @@ export async function httpGet<T>(
   const url = API_CONFIG.getFullUrl(endpoint);
   const response = await fetch(url, {
     method: 'GET',
+    credentials: 'include', // Inclure les cookies pour les sessions
     ...options,
     headers: buildHeaders(options),
   });
@@ -130,6 +131,7 @@ export async function httpPost<T>(
   const url = API_CONFIG.getFullUrl(endpoint);
   const response = await fetch(url, {
     method: 'POST',
+    credentials: 'include', // Inclure les cookies pour les sessions
     body: data ? JSON.stringify(data) : undefined,
     ...options,
     headers: buildHeaders(options),
@@ -149,6 +151,7 @@ export async function httpPut<T>(
   const url = API_CONFIG.getFullUrl(endpoint);
   const response = await fetch(url, {
     method: 'PUT',
+    credentials: 'include', // Inclure les cookies pour les sessions
     body: data ? JSON.stringify(data) : undefined,
     ...options,
     headers: buildHeaders(options),
@@ -168,6 +171,7 @@ export async function httpPatch<T>(
   const url = API_CONFIG.getFullUrl(endpoint);
   const response = await fetch(url, {
     method: 'PATCH',
+    credentials: 'include', // Inclure les cookies pour les sessions
     body: data ? JSON.stringify(data) : undefined,
     ...options,
     headers: buildHeaders(options),
@@ -186,6 +190,7 @@ export async function httpDelete<T>(
   const url = API_CONFIG.getFullUrl(endpoint);
   const response = await fetch(url, {
     method: 'DELETE',
+    credentials: 'include', // Inclure les cookies pour les sessions
     ...options,
     headers: buildHeaders(options),
   });
@@ -215,6 +220,7 @@ export async function httpUpload<T>(
   const url = API_CONFIG.getFullUrl(endpoint);
   const response = await fetch(url, {
     method: 'POST',
+    credentials: 'include', // Inclure les cookies pour les sessions
     body: formData,
     ...options,
     headers: {

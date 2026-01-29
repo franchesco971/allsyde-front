@@ -19,6 +19,9 @@ export type { LoginCredentials, LoginResponse, CurrentUser };
  * Authentifie un utilisateur et stocke le token JWT
  */
 export async function login(email: string, password: string): Promise<string> {
+  // Nettoyer les anciens tokens avant de se connecter
+  clearAuthToken();
+  
   const response = await httpPost<LoginResponse>(
     '/login',
     { email, password },
@@ -58,4 +61,24 @@ export async function getCurrentUser(): Promise<CurrentUser> {
  */
 export function isAuthenticated(): boolean {
   return hasAuthToken();
+}
+
+/**
+ * Vérifie la validité du token en essayant de récupérer l'utilisateur
+ * Retourne true si le token est valide, false sinon
+ */
+export async function validateToken(): Promise<boolean> {
+  if (!hasAuthToken()) {
+    return false;
+  }
+  
+  try {
+    await getCurrentUser();
+    return true;
+  } catch (error) {
+    // Token invalide ou expiré - on le supprime
+    console.warn('Token validation failed:', error instanceof Error ? error.message : 'Unknown error');
+    clearAuthToken();
+    return false;
+  }
 }

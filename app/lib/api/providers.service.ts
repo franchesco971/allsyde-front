@@ -19,7 +19,7 @@ export interface Provider {
  * Récupère tous les prestataires
  */
 export async function getProviders(): Promise<Provider[]> {
-  const response = await httpGet('/api/providers');
+  const response = await httpGet('/providers');
   return extractHydraMembers<Provider>(response);
 }
 
@@ -27,28 +27,28 @@ export async function getProviders(): Promise<Provider[]> {
  * Récupère un prestataire par son ID
  */
 export async function getProvider(id: number): Promise<Provider> {
-  return httpGet<Provider>(`/api/providers/${id}`);
+  return httpGet<Provider>(`/providers/${id}`);
 }
 
 /**
  * Crée un nouveau prestataire
  */
 export async function createProvider(providerData: Partial<Provider>): Promise<Provider> {
-  return httpPost<Provider>('/api/providers', providerData);
+  return httpPost<Provider>('/providers', providerData);
 }
 
 /**
  * Met à jour un prestataire (modification partielle)
  */
 export async function updateProvider(id: number, providerData: Partial<Provider>): Promise<Provider> {
-  return httpPatch<Provider>(`/api/providers/${id}`, providerData);
+  return httpPatch<Provider>(`/providers/${id}`, providerData);
 }
 
 /**
  * Supprime un prestataire
  */
 export async function deleteProvider(id: number): Promise<void> {
-  return httpDelete<void>(`/api/providers/${id}`);
+  return httpDelete<void>(`/providers/${id}`);
 }
 
 /**

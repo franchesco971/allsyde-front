@@ -8,7 +8,7 @@ export const API_CONFIG = {
   BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:13080',
   
   // Préfixe des endpoints API
-  PREFIX: process.env.NEXT_PUBLIC_API_PREFIX || '/api',
+  PREFIX: process.env.NEXT_PUBLIC_API_PREFIX || '/zapi',
   
   // Fonction helper pour construire une URL complète
   getFullUrl: (endpoint: string): string => {

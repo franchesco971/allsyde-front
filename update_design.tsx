@@ -1,11 +1,9 @@
-'use client';
-
 import { useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Shield,
   ChevronDown,
+  ChevronRight,
   LogOut,
   Building2,
   Settings,
@@ -21,32 +19,25 @@ import {
   Calendar,
   AlertTriangle,
   Map,
-  FileArchive,
-  Plus
+  FileArchive
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { useAuthContext } from "../lib/AuthContext";
-import { useSites } from "../lib/hooks";
-import type { Site } from "../lib/types/site";
-import { DropdownMenuTrigger,DropdownMenuContent, DropdownMenu, DropdownMenuItem } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
-interface SidebarProps {
-  level: 'admin' | 'provider' | 'global' | 'site'
-  siteId?: string
-  selectedSite?: Site
-  onSiteChange?: (site: Site) => void
-}
-
-export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteChange }: Readonly<SidebarProps>) {
-  const searchParams = useSearchParams();
-  const { user, logout } = useAuthContext();
-  const { sites } = useSites();
+export default function Sidebar({ user, sites, selectedSite, setSelectedSite, onLogout }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isRiskModuleOpen, setIsRiskModuleOpen] = useState(true);
 
   // Modules grisés (à venir)
@@ -60,18 +51,25 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
 
   // Sous-pages du module Maîtrise des Risques
   const riskSubPages = [
-    { icon: LayoutDashboard, label: "Tableau de bord", section: "risques", path: `/sites/${siteId}/risks` },
-    { icon: ClipboardList, label: "Obligations", section: "obligations", path: `/sites/${siteId}/risk/duties` },
-    { icon: Calendar, label: "Planning", section: "planning" , path: `/sites/${siteId}/risk/planning`},
-    { icon: AlertTriangle, label: "Réserves", section: "reserves" , path: `/sites/${siteId}/risk/reservations`},
-    { icon: Map, label: "Cartographie", section: "cartographie" , path: `/sites/${siteId}/risk/cartography`},
-    { icon: Users, label: "Prestataires", section: "prestataires" , path: `/sites/${siteId}/risk/providers`},
-    { icon: FileArchive, label: "Documents", section: "documents" , path: `/sites/${siteId}/risk/documents`},
+    { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
+    { icon: ClipboardList, label: "Obligations", path: "/dashboard/obligations" },
+    { icon: Calendar, label: "Planning", path: "/dashboard/planning" },
+    { icon: AlertTriangle, label: "Réserves", path: "/dashboard/reserves" },
+    { icon: Map, label: "Cartographie", path: "/dashboard/cartographie" },
+    { icon: Users, label: "Prestataires", path: "/dashboard/prestataires" },
+    { icon: FileArchive, label: "Documents", path: "/dashboard/documents" },
   ];
 
-  const currentSection = searchParams.get('section');
-  const isInRiskModule = currentSection?.startsWith('risques');
-  const isSubPageActive = (section: string) => currentSection === section;
+  const isSubPageActive = (path) => {
+    if (path === "/dashboard") {
+      return location.pathname === "/dashboard" || location.pathname === "/dashboard/";
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const isInRiskModule = () => {
+    return location.pathname.startsWith("/dashboard");
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -91,15 +89,15 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
 
         {/* Site selector */}
         <div className="p-4 border-b border-slate-100">
-          <Link
-            href="/sites"
+          <button
+            data-testid="back-to-sites"
             className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#00A69C] transition-colors mb-3"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Retour aux sites
-          </Link>
+          </button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -110,63 +108,27 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
                 <div className="flex items-center gap-3">
                   <Building2 className="w-5 h-5 text-[#00A69C]" />
                   <div className="text-left">
-                    <p className="font-medium text-slate-900 text-sm">{selectedSite?.label || "Sélectionner"}</p>
-                    <p className="text-xs text-slate-500">
-                      {typeof selectedSite?.assetType === 'string' ? selectedSite?.assetType : selectedSite?.assetType?.label || ""}
-                    </p>
+                    <p className="font-medium text-slate-900 text-sm">{selectedSite?.name || "Sélectionner"}</p>
+                    <p className="text-xs text-slate-500">{selectedSite?.asset_type || ""}</p>
                   </div>
                 </div>
                 <ChevronDown className="w-4 h-4 text-slate-400" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-80 p-2">
-                    {(Array.isArray(sites) ? sites : []).map((site: Site) => (
-                      <DropdownMenuItem
-                        key={site.id}
-                        className="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50"
-                        onClick={() => {
-                          onSiteChange?.(site)
-                          if (typeof globalThis.window !== 'undefined') {
-                            globalThis.window.location.href = `/sites/${site.id}`
-                          }
-                        }}
-                      >
-                        {/* <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
-                          {site.label.substring(0, 2).toUpperCase()}
-                        </div> */}
-                        <Building2 className="w-4 h-4 mr-2 text-slate-400" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">
-                            {site.label}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {typeof site.assetType === 'string' 
-                              ? site.assetType 
-                              : site.assetType?.label || 'Non défini'}
-                          </div>
-                        </div>
-                        {site.riskLevel === 'élevé' && (
-                          <div className="px-2 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
-                            Élevé
-                          </div>
-                        )}
-                        {site.riskLevel === 'critique' && (
-                          <div className="px-2 py-1 rounded-full bg-red-100 text-red-600 text-xs font-medium">
-                            Critique
-                          </div>
-                        )}
-                      </DropdownMenuItem>
-                    ))}
-                    
-                    <div className="mt-2 pt-2 border-t">
-                      <Link 
-                        href="/sites"
-                        className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Voir tous les sites
-                      </Link>
-                    </div>
+            <DropdownMenuContent align="start" className="w-56">
+              {sites.map((site) => (
+                <DropdownMenuItem
+                  key={site.site_id}
+                  onClick={() => setSelectedSite(site)}
+                  className="cursor-pointer"
+                >
+                  <Building2 className="w-4 h-4 mr-2 text-slate-400" />
+                  <div>
+                    <p className="font-medium">{site.name}</p>
+                    <p className="text-xs text-slate-500">{site.asset_type}</p>
+                  </div>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -177,13 +139,15 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
           
           {/* Module Maîtrise des Risques - EN PREMIER et ACTIF */}
           <div className="mb-2">
-            <Link
-              href={`/sites/${siteId}`}
+            <button
               onClick={() => {
                 setIsRiskModuleOpen(!isRiskModuleOpen);
+                if (!isInRiskModule()) {
+                  navigate("/dashboard");
+                }
               }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isInRiskModule
+                isInRiskModule()
                   ? "bg-[#00A69C] text-white shadow-md"
                   : "text-slate-700 hover:bg-slate-50"
               }`}
@@ -192,19 +156,19 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
               <Shield className="w-5 h-5" />
               <span className="flex-1 text-left">Maîtrise des Risques</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${isRiskModuleOpen ? "" : "-rotate-90"}`} />
-            </Link>
+            </button>
 
             {/* Sous-navigation dépliable */}
             {isRiskModuleOpen && (
               <ul className="mt-1 ml-3 pl-3 border-l-2 border-slate-200 space-y-0.5">
-                {riskSubPages.map((item) => {
+                {riskSubPages.map((item, index) => {
                   const Icon = item.icon;
-                  const isActive = isSubPageActive(item.section);
+                  const isActive = isSubPageActive(item.path);
                   
                   return (
-                    <li key={item.section}>
-                      <Link
-                        href={`/sites/${siteId}/risks/${item.section}`}
+                    <li key={index}>
+                      <button
+                        onClick={() => navigate(item.path)}
                         className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
                           isActive
                             ? "bg-teal-50 text-[#00A69C] font-medium"
@@ -214,7 +178,7 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
                       >
                         <Icon className={`w-4 h-4 ${isActive ? "text-[#00A69C]" : "text-slate-400"}`} />
                         <span>{item.label}</span>
-                      </Link>
+                      </button>
                     </li>
                   );
                 })}
@@ -265,15 +229,14 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
                 className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 <Avatar className="w-9 h-9">
+                  <AvatarImage src={user?.picture} alt={user?.name} />
                   <AvatarFallback className="bg-[#00A69C] text-white text-sm">
-                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                    {user?.name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-slate-900 truncate">{user?.email}</p>
-                  <p className="text-xs text-slate-500 truncate">
-                    {user?.roles?.includes('ROLE_ADMIN') ? 'Administrateur' : 'Utilisateur'}
-                  </p>
+                  <p className="text-sm font-medium text-slate-900 truncate">{user?.name}</p>
+                  <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-slate-400" />
               </button>
@@ -284,7 +247,7 @@ export default function Sidebar({ level = 'admin', siteId, selectedSite, onSiteC
                 Paramètres
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={logout}
+                onClick={onLogout}
                 className="cursor-pointer text-red-600 focus:text-red-600"
                 data-testid="logout-btn"
               >

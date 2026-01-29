@@ -32,7 +32,7 @@ export function useSites(): UseSitesReturn {
         getSiteTypes(),
       ]);
 
-      console.log('Fetched sites data:', sitesData);    
+      // console.log('Fetched sites data:', sitesData);    
 
       setSites(sitesData);
       setSiteTypes(typesData);
