@@ -7,7 +7,6 @@ import { ESGSection } from '@/app/components/sections/esgSection';
 import { OverviewSection } from '@/app/components/sections/overviewSection';
 import { PPASection } from '@/app/components/sections/ppaSection';
 import { PrestatairesSection } from '@/app/components/sections/prestatairesSection';
-import { RisquesSection } from '@/app/components/sections/risquesSection';
 import Sidebar from '@/app/components/sideBar';
 import { use, useEffect, useState, Suspense } from 'react';
 import { useSite, useSites } from '@/app/lib/hooks';
