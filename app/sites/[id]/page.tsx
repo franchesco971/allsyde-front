@@ -3,7 +3,6 @@
 import { BudgetSection } from '@/app/components/sections/budgetSection';
 import { ContratsSection } from '@/app/components/sections/contratSection';
 import { DevisSection } from '@/app/components/sections/devisSection';
-import { DocumentsSection } from '@/app/components/sections/DocumentsSection';
 import { ESGSection } from '@/app/components/sections/esgSection';
 import { OverviewSection } from '@/app/components/sections/overviewSection';
 import { PPASection } from '@/app/components/sections/ppaSection';
