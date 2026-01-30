@@ -8,7 +8,6 @@ import { ESGSection } from '@/app/components/sections/esgSection';
 import { OverviewSection } from '@/app/components/sections/overviewSection';
 import { PPASection } from '@/app/components/sections/ppaSection';
 import { PrestatairesSection } from '@/app/components/sections/prestatairesSection';
-import { RisquesSection } from '@/app/components/sections/risquesSection';
 import Sidebar from '@/app/components/sideBar';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
@@ -87,8 +86,8 @@ function SiteDetailContent() {
         // return <RisquesSection site={site} />;
       case 'prestataires':
         return <PrestatairesSection />;
-      case 'documents':
-        return <DocumentsSection site={site} />;
+      // case 'documents':
+      //   return <DocumentsSection site={site} />;
       case 'esg':
         return <ESGSection site={site} />;
       default:

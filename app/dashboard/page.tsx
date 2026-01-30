@@ -28,7 +28,7 @@ function DashboardContent() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar level="global" />
+      <Sidebar />
       
       <main className="flex-1 ml-64">
         {/* Header - Compact */}

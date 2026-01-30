@@ -22,24 +22,24 @@ import type { Duty } from "@/app/lib/api/duties.service";
 import type { Reservation } from "@/app/lib/api/reservations.service";
 import { httpGet, extractHydraMembers } from "@/app/lib/api/http-client";
 import Sidebar from "@/app/components/sideBar";
-
-interface DutyDetailProps {
-  dutyId: number;
-  id: number;
-  onBack: () => void;
-}
+import { useRouter } from "next/navigation";
 
 type Props = {
-  params: Promise<{ dutyId:string, id: string|undefined,onBack: () => void;}>;
+  params: Promise<{ dutyId:string, id: string|undefined}>;
 };
 
 // export default function DutyDetail({ dutyId, siteId, onBack }: Readonly<DutyDetailProps>) {
 export default function DutyDetail({ params }: Props) {
-const { dutyId, id, onBack } = use(params);
+const { dutyId, id } = use(params);
 const siteId = id
+const {push} = useRouter();
   const [duty, setDuty] = useState<Duty | null>(null);
   const [linkedReserves, setLinkedReserves] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // const onBack = () => {
+  //    push(`/sites/${siteId}/risk/obligations`)
+  // }
 
   if (!dutyId || !siteId) { 
 
@@ -47,7 +47,7 @@ const siteId = id
         <div className="text-center py-12">
 
             <p className="text-slate-500">Obligation non trouvée</p>
-            <Button onClick={onBack} className="mt-4">  
+            <Button onClick={() => push(`/sites/${siteId}/risks/obligations`)} className="mt-4">  
                 Retour aux obligations
             </Button>
         </div>
@@ -96,7 +96,7 @@ const siteId = id
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Obligation non trouvée</p>
-        <Button onClick={onBack} className="mt-4">
+        <Button onClick={() => push(`/sites/${siteId}/risks/obligations`)} className="mt-4">
           Retour aux obligations
         </Button>
       </div>
@@ -152,13 +152,22 @@ const siteId = id
     <div className="flex min-h-screen bg-background">
             <Sidebar siteId={id} />
             <main className="flex-1 ml-64">
-              <div className="flex items-center justify-center h-screen">
-                <div className="text-center max-w-md"></div>
+              {/* Header */}
+              <header className="bg-card border-b border-border sticky top-0 z-10">
+                <div className="px-8 py-6">
+                  <h1 className="text-2xl font-bold text-foreground mb-1">{duty.name}</h1>
+                  {/* <p className="text-sm text-muted-foreground">{site.address}</p> */}
+                </div>
+              </header>
+
+              {/* <div className="flex items-center justify-center h-screen">
+                <div className="text-center max-w-md"></div> */}
+                <div className="p-8">
     <div className="space-y-6" data-testid="obligation-detail">
       {/* Back button */}
       <Button
         variant="ghost"
-        onClick={onBack}
+        onClick={() => push(`/sites/${siteId}/risks/obligations`)}
         className="text-slate-600 hover:text-slate-900 -ml-2"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />

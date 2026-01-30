@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Download, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Sparkles, ChevronDown, ChevronUp, Activity, Link as LinkIcon, Lightbulb } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AIInsightBadge } from '../aIInsightBadge';
 import { cn } from '@/app/lib/util';
 
@@ -234,7 +234,7 @@ export const BudgetSection = () => {
       <div className="space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-1">Synthèse budgétaire</h2>
-          <p className="text-sm text-muted-foreground">Vue d'ensemble cockpit avec projections IA</p>
+          <p className="text-sm text-muted-foreground">Vue d&aposensemble cockpit avec projections IA</p>
         </div>
         
         {/* 4 Indicateurs principaux */}

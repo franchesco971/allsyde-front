@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { cn } from '../lib/util';
+import { MouseEventHandler } from 'react';
 // import { cn } from '@/lib/utils';
 
 interface ActionCardProps {
@@ -9,7 +10,7 @@ interface ActionCardProps {
   description: string;
   count: number;
   priority: 'high' | 'medium' | 'low';
-  onClick?: (e: any) => void;
+  onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
 }
 
 export default function ActionCard({ icon: Icon, title, description, count, priority, onClick } : Readonly<ActionCardProps>) {

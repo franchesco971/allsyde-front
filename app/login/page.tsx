@@ -16,7 +16,7 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   // Récupérer la route de redirection depuis les query params
-  const redirectTo = searchParams.get('redirect') || '/dashboard';
+  const redirectTo = searchParams.get('redirect') || '/sites';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -25,8 +25,14 @@ function LoginForm() {
 
     try {
       await login(email, password);
-      // Redirection vers la route demandée ou le dashboard par défaut
-      router.push(redirectTo);
+      
+      // Redirection vers la route demandée
+      // Utiliser window.location pour forcer un rechargement complet et éviter les problèmes de cache
+      if (globalThis.window === undefined) {
+        router.push(redirectTo);
+      } else {
+        globalThis.window.location.href = redirectTo;
+      }
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -198,13 +204,27 @@ function LoginForm() {
 
           <p className="mt-6 text-center text-sm text-slate-500">
             En continuant, vous acceptez nos{" "}
-            <a href="#" className="text-[#00A69C] hover:underline">
+            <button
+              type="button"
+              className="text-[#00A69C] hover:underline inline"
+              onClick={() => {
+                // Ouvrir modal CGU (à implémenter)
+                console.log('CGU clicked');
+              }}
+            >
               Conditions d'utilisation
-            </a>{" "}
+            </button>{" "}
             et notre{" "}
-            <a href="#" className="text-[#00A69C] hover:underline">
+            <button
+              type="button"
+              className="text-[#00A69C] hover:underline inline"
+              onClick={() => {
+                // Ouvrir modal politique (à implémenter)
+                console.log('Politique clicked');
+              }}
+            >
               Politique de confidentialité
-            </a>
+            </button>
           </p>
         </div>
       </div>
