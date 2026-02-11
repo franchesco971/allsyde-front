@@ -1,6 +1,8 @@
 // Types pour l'entité Site avec toutes les propriétés backend
 // Correspond à l'API /api/sites
 
+import { API_CONFIG } from '../api/config';
+
 export type SiteStatus = 'good' | 'warning' | 'alert';
 export type AIStatus = 'ok' | 'attention' | 'alerte';
 export type RiskLevel = 'normal' | 'élevé' | 'critique';
@@ -64,7 +66,7 @@ export const SITE_TYPE_ICONS = {
 
 // Exemple d'utilisation avec fetch
 export async function fetchSites(token: string): Promise<Site[]> {
-  const response = await fetch('http://localhost:13080/api/sites', {
+  const response = await fetch(`${API_CONFIG.BASE_URL}/api/sites`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -80,7 +82,7 @@ export async function fetchSites(token: string): Promise<Site[]> {
 }
 
 export async function fetchSiteTypes(token: string): Promise<SiteType[]> {
-  const response = await fetch('http://localhost:13080/api/site_types', {
+  const response = await fetch(`${API_CONFIG.BASE_URL}/api/site_types`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',

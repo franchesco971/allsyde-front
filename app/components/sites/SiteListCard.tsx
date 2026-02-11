@@ -30,7 +30,7 @@ const aiStatusConfig = {
 };
 
 export function SiteListCard({ site, onNavigate }: Readonly<SiteListCardProps>) {
-  const aiConfig = aiStatusConfig[site.aiStatus];
+  const aiConfig = aiStatusConfig[site.aiStatus] || aiStatusConfig.ok;
   const Icon = site.icon;
 
   return (

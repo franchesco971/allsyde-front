@@ -36,7 +36,7 @@ const aiStatusConfig = {
 };
 
 export function SiteGridCard({ site, onNavigate }: Readonly<SiteCardProps>) {
-  const aiConfig = aiStatusConfig[site.aiStatus];
+  const aiConfig = aiStatusConfig[site.aiStatus] || aiStatusConfig.ok;
   const Icon = site.icon;
 
   return (
