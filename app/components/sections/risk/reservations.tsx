@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Site } from "@/app/lib/types/site";
 import { useReservations } from "@/app/lib/hooks/useReservations";
 import { Reservation, patchReservation } from "@/app/lib/api/reservations.service";
+import { uploadReport, UploadReportResponse } from "@/app/lib/api/reports.service";
 
 interface ImportResult {
   error?: boolean;
@@ -45,6 +46,7 @@ interface ImportResult {
     location: string;
     severity: string;
   }>;
+  reservations_created?: number;
 }
 
 interface ReservesProps {
@@ -74,23 +76,44 @@ export default function Reservations({ site }: ReservesProps) {
       return;
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Le fichier est trop volumineux (max 10 MB)");
+      return;
+    }
+
     setImporting(true);
     setShowImportDialog(true);
+    setImportResult(null);
 
     try {
-      // TODO: Créer un service pour l'import de rapports
-      // const formData = new FormData();
-      // formData.append("file", file);
-      // const response = await importReport(site.id, formData);
-      // setImportResult(response);
-      // toast.success(`${response.reserves?.length || 0} réserves créées`);
-      // refetch();
+      const response: UploadReportResponse = await uploadReport(file);
       
-      toast.info("Fonctionnalité d'import en développement");
+      // Transformer la réponse pour correspondre à ImportResult
+      const importResult: ImportResult = {
+        message: response.message,
+        reserves: response.extracted_data.reserves.map(reserve => ({
+          description: reserve.description || 'Sans description',
+          location: `Page ${reserve.page || 'N/A'}`,
+          severity: reserve.niveau
+        })),
+        reservations_created: response.reservations_created
+      };
+      
+      setImportResult(importResult);
+      
+      const count = response.reservations_created || response.extracted_data.reserves.length;
+      toast.success(`${count} réserve${count > 1 ? 's' : ''} créée${count > 1 ? 's' : ''}`);
+      
+      // Recharger la liste des réserves
+      refetch();
     } catch (error) {
       console.error("Error importing report:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       toast.error("Erreur lors de l'import du rapport");
-      setImportResult({ error: true, message: error instanceof Error ? error.message : 'Erreur inconnue' });
+      setImportResult({ 
+        error: true, 
+        message: errorMessage 
+      });
     } finally {
       setImporting(false);
       event.target.value = "";
