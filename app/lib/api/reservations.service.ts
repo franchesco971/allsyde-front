@@ -133,6 +133,6 @@ export async function getReservationsByProvider(providerId: number): Promise<Res
  * Assigne un prestataire à une réserve
  */
 export async function assignProviderToReservation(reservationId: number, providerIri: string): Promise<Reservation> {
-  return patchReservation(reservationId, { assignedProvider: providerIri } as Partial<Reservation>);
+  return patchReservation(reservationId, { assignedProvider: providerIri } as unknown as Partial<Reservation>);
 }
 
