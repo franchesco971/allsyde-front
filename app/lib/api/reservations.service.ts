@@ -34,6 +34,15 @@ export interface Reservation {
   dueDate: string;
   reservationType: ReservationType;
   site: string;
+  assignedProvider: {
+    '@id': string;
+    '@type': string;
+    id: number;
+    email: string;
+    firstname: string;
+    lastname: string;
+    roles: string[];
+  } | null;
 }
 
 /**
@@ -111,3 +120,19 @@ export async function closeReservation(id: number, proofId: number): Promise<Res
     proof: `/api/proofs/${proofId}`,
   });
 }
+
+/**
+ * Récupère les réserves assignées à un prestataire
+ */
+export async function getReservationsByProvider(providerId: number): Promise<Reservation[]> {
+  const response = await httpGet(`/reservations?assignedProvider=${providerId}`);
+  return extractHydraMembers<Reservation>(response);
+}
+
+/**
+ * Assigne un prestataire à une réserve
+ */
+export async function assignProviderToReservation(reservationId: number, providerIri: string): Promise<Reservation> {
+  return patchReservation(reservationId, { assignedProvider: providerIri } as Partial<Reservation>);
+}
+

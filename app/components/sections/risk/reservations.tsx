@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
@@ -30,13 +30,16 @@ import {
   UserPlus,
   History,
   ChevronRight,
-  Shield
+  Shield,
+  User
 } from "lucide-react";
 import { toast } from "sonner";
 import { Site } from "@/app/lib/types/site";
 import { useReservations } from "@/app/lib/hooks/useReservations";
-import { Reservation, patchReservation } from "@/app/lib/api/reservations.service";
+import { Reservation, patchReservation, assignProviderToReservation } from "@/app/lib/api/reservations.service";
 import { uploadReport, UploadReportResponse } from "@/app/lib/api/reports.service";
+import { getProviderUsers, User as UserType } from "@/app/lib/api/users.service";
+import { useAuthContext } from "@/app/lib/AuthContext";
 
 interface ImportResult {
   error?: boolean;
@@ -55,13 +58,24 @@ interface ReservesProps {
 
 export default function Reservations({ site }: ReservesProps) {
   const { reservations, isLoading, refetch } = useReservations(site.id);
+  const { user } = useAuthContext();
   const [importing, setImporting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedReserve, setSelectedReserve] = useState<Reservation | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [filter, setFilter] = useState("all");
+  const [providers, setProviders] = useState<UserType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canAssign = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_MANAGER');
+
+  useEffect(() => {
+    if (canAssign) {
+      getProviderUsers().then(setProviders).catch(console.error);
+    }
+  }, [canAssign]);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -129,6 +143,19 @@ export default function Reservations({ site }: ReservesProps) {
     } catch (error) {
       console.error("Error updating reserve:", error);
       toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const handleAssignProvider = async (providerId: number) => {
+    if (!selectedReserve) return;
+    try {
+      await assignProviderToReservation(selectedReserve.id, `/zapi/users/${providerId}`);
+      toast.success("Prestataire assigné avec succès");
+      refetch();
+      setShowAssignDialog(false);
+    } catch (error) {
+      console.error("Error assigning provider:", error);
+      toast.error("Erreur lors de l'assignation");
     }
   };
 
@@ -225,6 +252,10 @@ export default function Reservations({ site }: ReservesProps) {
                 setSelectedReserve(reserve);
                 setShowActionDialog(true);
               }}
+              onAssign={canAssign ? () => {
+                setSelectedReserve(reserve);
+                setShowAssignDialog(true);
+              } : undefined}
             />
           ))
         )}
@@ -289,6 +320,10 @@ export default function Reservations({ site }: ReservesProps) {
               reserve={selectedReserve}
               onUpdate={handleUpdateReserve}
               onClose={() => setShowActionDialog(false)}
+              onAssign={canAssign ? () => {
+                setShowActionDialog(false);
+                setShowAssignDialog(true);
+              } : undefined}
               onViewTimeline={() => {
                 setShowActionDialog(false);
                 // TODO: navigate to timeline
@@ -301,6 +336,26 @@ export default function Reservations({ site }: ReservesProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Assign Provider Dialog */}
+      {canAssign && (
+        <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading">Assigner un prestataire</DialogTitle>
+              <DialogDescription>
+                Choisissez le prestataire qui sera responsable de cette réserve.
+              </DialogDescription>
+            </DialogHeader>
+            <AssignProviderDialog
+              reserve={selectedReserve}
+              providers={providers}
+              onAssign={handleAssignProvider}
+              onClose={() => setShowAssignDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
@@ -391,9 +446,10 @@ function StatusBadge({ status }: StatusBadgeProps) {
 interface ReserveCardProps {
   readonly reserve: Reservation;
   readonly onAction: () => void;
+  readonly onAssign?: () => void;
 }
 
-function ReserveCard({ reserve, onAction }: ReserveCardProps) {
+function ReserveCard({ reserve, onAction, onAssign }: ReserveCardProps) {
   const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return "Non défini";
     const date = new Date(dateStr);
@@ -443,6 +499,36 @@ function ReserveCard({ reserve, onAction }: ReserveCardProps) {
                 {getReserveStatusMessage(reserve.status)}
               </p>
             </div>
+
+            {/* Prestataire assigné */}
+            {reserve.assignedProvider ? (
+              <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+                <User className="w-4 h-4 text-teal-600" />
+                <span className="font-medium text-teal-700">
+                  Assigné à : {reserve.assignedProvider.firstname} {reserve.assignedProvider.lastname}
+                </span>
+                {onAssign && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onAssign(); }}
+                    className="ml-auto text-xs text-teal-600 hover:underline"
+                  >
+                    Modifier
+                  </button>
+                )}
+              </div>
+            ) : (
+              onAssign && (
+                <div className="mt-3">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onAssign(); }}
+                    className="flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Assigner un prestataire
+                  </button>
+                </div>
+              )
+            )}
           </div>
 
           {reserve.status !== "cloturee" && (
@@ -467,12 +553,13 @@ interface GTActionsProps {
   readonly reserve: Reservation;
   readonly onUpdate: (reserveId: number, updates: Partial<Reservation>) => Promise<void>;
   readonly onClose: () => void;
+  readonly onAssign?: () => void;
   readonly onViewTimeline: () => void;
   readonly onViewDocuments: () => void;
 }
 
 // Actions GT uniquement (pas de lever réserve, pas d'ajout preuve, pas de devis)
-function GTActions({ reserve, onUpdate, onClose, onViewTimeline, onViewDocuments }: GTActionsProps) {
+function GTActions({ reserve, onUpdate, onClose, onAssign, onViewTimeline, onViewDocuments }: GTActionsProps) {
   const [action, setAction] = useState("");
   const [newPrestataire, setNewPrestataire] = useState("");
 
@@ -536,6 +623,16 @@ function GTActions({ reserve, onUpdate, onClose, onViewTimeline, onViewDocuments
           <FileText className="w-4 h-4" />
           Documents
         </Button>
+        {onAssign && (
+          <Button
+            variant="outline"
+            className="col-span-2 flex items-center gap-2 text-teal-600 border-teal-200 hover:bg-teal-50"
+            onClick={onAssign}
+          >
+            <UserPlus className="w-4 h-4" />
+            Assigner un prestataire
+          </Button>
+        )}
       </div>
 
       <div className="border-t border-slate-100 pt-4">
@@ -590,6 +687,77 @@ function GTActions({ reserve, onUpdate, onClose, onViewTimeline, onViewDocuments
           data-testid="submit-action-btn"
         >
           Valider
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+interface AssignProviderDialogProps {
+  readonly reserve: Reservation | null;
+  readonly providers: UserType[];
+  readonly onAssign: (providerId: number) => Promise<void>;
+  readonly onClose: () => void;
+}
+
+function AssignProviderDialog({ reserve, providers, onAssign, onClose }: AssignProviderDialogProps) {
+  const [selectedProviderId, setSelectedProviderId] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+
+  const currentProvider = reserve?.assignedProvider;
+
+  const handleSubmit = async () => {
+    if (!selectedProviderId) return;
+    setLoading(true);
+    try {
+      await onAssign(Number(selectedProviderId));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4 py-2">
+      {currentProvider && (
+        <div className="flex items-center gap-2 p-3 bg-teal-50 rounded-lg text-sm text-teal-700">
+          <User className="w-4 h-4" />
+          Actuellement assigné : <strong>{currentProvider.firstname} {currentProvider.lastname}</strong>
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          Prestataire à assigner
+        </label>
+        <Select value={selectedProviderId} onValueChange={setSelectedProviderId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Choisir un prestataire" />
+          </SelectTrigger>
+          <SelectContent>
+            {providers.length === 0 ? (
+              <SelectItem value="none" disabled>Aucun prestataire disponible</SelectItem>
+            ) : (
+              providers.map((p) => (
+                <SelectItem key={p.id} value={String(p.id)}>
+                  {p.firstname} {p.lastname} — {p.email}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>
+          Annuler
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={!selectedProviderId || loading}
+          className="bg-[#00A69C] hover:bg-[#00897B] text-white"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
+          Assigner
         </Button>
       </DialogFooter>
     </div>

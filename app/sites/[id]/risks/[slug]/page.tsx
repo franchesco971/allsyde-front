@@ -16,12 +16,15 @@ import { ProtectedRoute } from '@/app/lib/ProtectedRoute';
 import Duties from '@/app/components/sections/risk/duties';
 import Planning from '@/app/components/sections/risk/planning';
 import Reservations from '@/app/components/sections/risk/reservations';
+import AssignedReservations from '@/app/components/sections/risk/assignedReservations';
+import InterventionsSection from '@/app/components/sections/risk/interventionsSection';
 import Cartography from '@/app/components/sections/risk/cartography';
 import Providers from '@/app/components/sections/risk/providers';
 import Documents from '@/app/components/sections/risk/documents';
+import { useAuthContext } from '@/app/lib/AuthContext';
 
 type Props = {
-  params: Promise<{ id:string, slug: string|undefined}>;
+  readonly params: Promise<{ id:string, slug: string|undefined}>;
 };
 
 function SiteRisksContent({ params }: Props) {
@@ -34,6 +37,8 @@ function SiteRisksContent({ params }: Props) {
   const siteId = Number.parseInt(id);
   const { site, isLoading, error, refetch } = useSite(siteId);
   const { sites } = useSites();
+  const { user } = useAuthContext();
+  const isProvider = user?.roles?.includes('ROLE_PROVIDER');
   
   useEffect(() => {
     // console.log('Slug from params:', slug);
@@ -104,7 +109,9 @@ function SiteRisksContent({ params }: Props) {
       // case 'cartographie':
       //   return <Cartography sites={sites} selectedSite={selectedSite} setSelectedSite={setSelectedSite} />;
       case 'reserves':
-        return <Reservations site={site} />;
+        return isProvider ? <AssignedReservations site={site} /> : <Reservations site={site} />;
+      case 'interventions':
+        return <InterventionsSection site={site} />;
       case 'planning':
         return <Planning site={site} />;
       case 'obligations':

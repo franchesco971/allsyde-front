@@ -60,15 +60,23 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
   ];
 
   // Sous-pages du module Maîtrise des Risques
-  const riskSubPages = [
-    { icon: LayoutDashboard, label: "Tableau de bord", section: "risques", path: `/sites/${siteId}/risks` },
-    { icon: ClipboardList, label: "Obligations", section: "obligations", path: `/sites/${siteId}/risk/duties` },
-    { icon: Calendar, label: "Planning", section: "planning" , path: `/sites/${siteId}/risk/planning`},
-    { icon: AlertTriangle, label: "Réserves", section: "reserves" , path: `/sites/${siteId}/risk/reservations`},
-    { icon: Map, label: "Cartographie", section: "cartographie" , path: `/sites/${siteId}/risk/cartography`},
-    { icon: Users, label: "Prestataires", section: "prestataires" , path: `/sites/${siteId}/risk/providers`},
-    { icon: FileArchive, label: "Documents", section: "documents" , path: `/sites/${siteId}/risk/documents`},
-  ];
+  const isProvider = user?.roles?.includes('ROLE_PROVIDER');
+
+  const riskSubPages = isProvider
+    ? [
+        { icon: LayoutDashboard, label: "Tableau de bord", section: "risques", path: `/sites/${siteId}/risks` },
+        { icon: AlertTriangle, label: "Réserves assignées", section: "reserves", path: `/sites/${siteId}/risks/reserves` },
+        { icon: ClipboardList, label: "Mes interventions", section: "interventions", path: `/sites/${siteId}/risks/interventions` },
+      ]
+    : [
+        { icon: LayoutDashboard, label: "Tableau de bord", section: "risques", path: `/sites/${siteId}/risks` },
+        { icon: ClipboardList, label: "Obligations", section: "obligations", path: `/sites/${siteId}/risk/duties` },
+        { icon: Calendar, label: "Planning", section: "planning", path: `/sites/${siteId}/risk/planning` },
+        { icon: AlertTriangle, label: "Réserves", section: "reserves", path: `/sites/${siteId}/risks/reserves` },
+        { icon: Map, label: "Cartographie", section: "cartographie", path: `/sites/${siteId}/risk/cartography` },
+        { icon: Users, label: "Prestataires", section: "prestataires", path: `/sites/${siteId}/risk/providers` },
+        { icon: FileArchive, label: "Documents", section: "documents", path: `/sites/${siteId}/risk/documents` },
+      ];
 
   // const currentSection = searchParams.get('section');
   const currentSection = slug;
@@ -274,7 +282,12 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
                 <div className="flex-1 text-left">
                   <p className="text-sm font-medium text-slate-900 truncate">{user?.email}</p>
                   <p className="text-xs text-slate-500 truncate">
-                    {user?.roles?.includes('ROLE_ADMIN') ? 'Administrateur' : 'Utilisateur'}
+                    {(() => {
+                      if (user?.roles?.includes('ROLE_ADMIN')) return 'Administrateur';
+                      if (user?.roles?.includes('ROLE_MANAGER')) return 'Gestionnaire';
+                      if (user?.roles?.includes('ROLE_PROVIDER')) return 'Prestataire';
+                      return 'Utilisateur';
+                    })()}
                   </p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-slate-400" />
