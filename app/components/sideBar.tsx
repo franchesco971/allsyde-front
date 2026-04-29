@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import {
   Shield,
   ChevronDown,
@@ -46,9 +46,10 @@ interface SidebarProps {
 
 export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSiteChange }: Readonly<SidebarProps>) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { user, logout } = useAuthContext();
   const { sites } = useSites();
-  const [isRiskModuleOpen, setIsRiskModuleOpen] = useState(true);
+  const [isRiskModuleOpen, setIsRiskModuleOpen] = useState(!!siteId);
 
   // Modules grisés (à venir)
   const disabledModules = [
@@ -80,7 +81,7 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
 
   // const currentSection = searchParams.get('section');
   const currentSection = slug;
-  const isInRiskModule = riskSubPages.some(page => page.section === currentSection);
+  const isInRiskModule = !!siteId && riskSubPages.some(page => page.section === currentSection);
   const isSubPageActive = (section: string) => currentSection === section;
 
   return (
@@ -101,15 +102,17 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
 
         {/* Site selector */}
         <div className="p-4 border-b border-slate-100">
-          <Link
-            href="/sites"
-            className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#00A69C] transition-colors mb-3"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Retour aux sites
-          </Link>
+          {pathname !== '/sites' && (
+            <Link
+              href="/sites"
+              className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#00A69C] transition-colors mb-3"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Retour aux sites
+            </Link>
+          )}
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -187,25 +190,37 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
           
           {/* Module Maîtrise des Risques - EN PREMIER et ACTIF */}
           <div className="mb-2">
-            <Link
-              href={`/sites/${siteId}`}
-              onClick={() => {
-                setIsRiskModuleOpen(!isRiskModuleOpen);
-              }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isInRiskModule
-                  ? "bg-[#00A69C] text-white shadow-md"
-                  : "text-slate-700 hover:bg-slate-50"
-              }`}
-              data-testid="sidebar-maitrise-des-risques"
-            >
-              <Shield className="w-5 h-5" />
-              <span className="flex-1 text-left">Maîtrise des Risques</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${isRiskModuleOpen ? "" : "-rotate-90"}`} />
-            </Link>
+            {siteId ? (
+              <Link
+                href={`/sites/${siteId}`}
+                onClick={() => {
+                  setIsRiskModuleOpen(!isRiskModuleOpen);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isInRiskModule
+                    ? "bg-[#00A69C] text-white shadow-md"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+                data-testid="sidebar-maitrise-des-risques"
+              >
+                <Shield className="w-5 h-5" />
+                <span className="flex-1 text-left">Maîtrise des Risques</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isRiskModuleOpen ? "" : "-rotate-90"}`} />
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 cursor-not-allowed"
+                data-testid="sidebar-maitrise-des-risques"
+              >
+                <Shield className="w-5 h-5" />
+                <span className="flex-1 text-left">Maîtrise des Risques</span>
+                <Lock className="w-3.5 h-3.5" />
+              </button>
+            )}
 
             {/* Sous-navigation dépliable */}
-            {isRiskModuleOpen && (
+            {isRiskModuleOpen && !!siteId && (
               <ul className="mt-1 ml-3 pl-3 border-l-2 border-slate-200 space-y-0.5">
                 {riskSubPages.map((item) => {
                   const Icon = item.icon;
