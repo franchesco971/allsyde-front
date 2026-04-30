@@ -66,4 +66,9 @@ export interface CurrentUser {
     id: number;
     label: string;
   } | null;
+  company: {
+    id: number;
+    name: string;
+    logo: string | null;
+  } | null;
 }

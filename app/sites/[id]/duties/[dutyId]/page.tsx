@@ -153,7 +153,7 @@ const {push} = useRouter();
             <Sidebar siteId={id} />
             <main className="flex-1 ml-64">
               {/* Header */}
-              <header className="bg-card border-b border-border sticky top-0 z-10">
+              <header className="bg-card border-b border-border sticky top-14 z-10">
                 <div className="px-8 py-6">
                   <h1 className="text-2xl font-bold text-foreground mb-1">{duty.name}</h1>
                   {/* <p className="text-sm text-muted-foreground">{site.address}</p> */}

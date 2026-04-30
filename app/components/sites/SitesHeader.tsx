@@ -62,14 +62,12 @@ export function SitesHeader({
   onAddSite,
 }: Readonly<SitesHeaderProps>) {
   return (
-    <header className="bg-card border-b border-border sticky top-0 z-10">
+    <header className="bg-card border-b border-border sticky top-14 z-10">
       <div className="px-6 py-4">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h1 className="section-title mb-1">Mes Sites</h1>
-            <p className="label-secondary">
-              Vue portefeuille – suivi des performances et budgets par site
-            </p>
+            <p className="label-secondary">Vue portefeuille – suivi des performances et budgets par site</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="compact-card ai-section">

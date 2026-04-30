@@ -32,7 +32,7 @@ function DashboardContent() {
       
       <main className="flex-1 ml-64">
         {/* Header - Compact */}
-        <header className="bg-card border-b border-border sticky top-0 z-10">
+        <header className="bg-card border-b border-border sticky top-14 z-10">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div>

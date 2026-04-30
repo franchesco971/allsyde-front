@@ -34,7 +34,7 @@ import { useAuthContext } from "../lib/AuthContext";
 import { useSites } from "../lib/hooks";
 import type { Site } from "../lib/types/site";
 import { DropdownMenuTrigger,DropdownMenuContent, DropdownMenu, DropdownMenuItem } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface SidebarProps {
   // level: 'admin' | 'provider' | 'global' | 'site'
@@ -86,16 +86,16 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-40">
+      <aside className="fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-64 bg-white border-r border-slate-200 flex flex-col z-40">
         {/* Logo */}
         <div className="p-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#00A69C] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[#00A69C] flex items-center justify-center shrink-0">
               <span className="text-white font-heading font-bold text-lg">A</span>
             </div>
             <div>
               <h1 className="font-heading font-bold text-slate-900">AllSyde</h1>
-              <p className="text-xs text-slate-500">Premium v5 <span className="bg-[#00A69C] text-white px-1.5 py-0.5 rounded text-[10px] ml-1">IA</span></p>
+              <p className="text-xs text-slate-500">v1.0 <span className="bg-[#00A69C] text-white px-1.5 py-0.5 rounded text-[10px] ml-1">IA</span></p>
             </div>
           </div>
         </div>
