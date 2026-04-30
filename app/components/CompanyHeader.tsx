@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useAuthContext } from '../lib/AuthContext';
+import { API_CONFIG } from '../lib/api/config';
 
 const HIDDEN_PATHS = ['/', '/login'];
 
@@ -15,7 +16,7 @@ export default function CompanyHeader() {
     <div className="sticky top-0 w-full h-14 bg-white border-b border-slate-200 z-50 flex items-center px-6 gap-3">
       {user?.company?.logo ? (
         <img
-          src={user.company.logo}
+          src={`${API_CONFIG.BASE_URL}${user.company.logo}`}
           alt={user.company.name ?? ''}
           className="h-8 w-auto max-w-[120px] object-contain"
         />
