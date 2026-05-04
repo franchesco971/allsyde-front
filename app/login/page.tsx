@@ -2,7 +2,10 @@
 
 import { useState, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Lock, Mail, AlertCircle, Shield } from 'lucide-react';
+import Link from 'next/link';
+import { Loader2, Lock, Mail, AlertCircle } from 'lucide-react';
+import AuthBranding from '../components/AuthBranding';
+import styles from './page.module.scss';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { login } from '../lib/api/auth.service';
@@ -45,98 +48,56 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left side - Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative">
-        <img
-          src="https://images.pexels.com/photos/16276655/pexels-photo-16276655.jpeg"
-          alt="Modern building"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#00A69C]/80 to-[#00796B]/80"></div>
-        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
-          <h1 className="font-heading text-5xl font-bold mb-6">AllSyde Risk</h1>
-          <p className="text-xl opacity-90 max-w-md leading-relaxed">
-            Maîtrisez les risques réglementaires de vos actifs immobiliers avec intelligence et précision.
-          </p>
-          <div className="mt-10 flex gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <Shield className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="font-semibold">100%</div>
-                <div className="text-sm opacity-75">Conformité</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <div className="font-semibold">IA</div>
-                <div className="text-sm opacity-75">Activée</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className={styles.loginPage}>
+      {/* Left side – branding */}
+      <AuthBranding description="Maîtrisez les risques réglementaires de vos actifs immobiliers avec intelligence et précision." />
 
-      {/* Right side - Login form */}
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 bg-white">
-        <div className="max-w-md mx-auto w-full">
+      {/* Right side – formulaire */}
+      <div className={styles.loginFormSide}>
+        <div className={styles.loginFormContainer}>
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-12 h-12 rounded-xl bg-[#00A69C] flex items-center justify-center">
-              <span className="text-white font-heading font-bold text-xl">A</span>
+          <div className={styles.loginLogo}>
+            <div className={styles.loginLogoIcon}>
+              <span className={styles.loginLogoIconText}>A</span>
             </div>
             <div>
-              <h2 className="font-heading text-2xl font-bold text-slate-900">AllSyde</h2>
-              <p className="text-sm text-slate-500">Premium v5 • IA</p>
+              <h2 className={styles.loginLogoName}>AllSyde</h2>
+              <p className={styles.loginLogoVersion}>Premium v5 • IA</p>
             </div>
           </div>
 
-          <h3 className="font-heading text-3xl font-bold text-slate-900 mb-2">
-            Bienvenue
-          </h3>
-          <p className="text-slate-600 mb-8">
+          <h3 className={styles.loginTitle}>Bienvenue</h3>
+          <p className={styles.loginSubtitle}>
             Connectez-vous pour accéder à votre espace de gestion des risques.
           </p>
 
           {/* Message d'erreur */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className={styles.loginAlertError}>
+              <AlertCircle className={styles.loginAlertErrorIcon} />
               <div>
-                <p className="text-sm font-medium text-red-800">
-                  Erreur de connexion
-                </p>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <p className={styles.loginAlertErrorTitle}>Erreur de connexion</p>
+                <p className={styles.loginAlertErrorMsg}>{error}</p>
               </div>
             </div>
           )}
 
           {/* Formulaire de connexion */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className={styles.loginForm}>
             {/* Email */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
+              <label htmlFor="email" className={styles.loginFormLabel}>
                 Adresse email
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <div className={styles.loginFormInputWrapper}>
+                <Mail className={styles.loginFormInputIcon} />
                 <Input
                   id="email"
                   type="email"
                   placeholder="exemple@allsyde.fr"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12 border-slate-200 focus:border-[#00A69C] focus:ring-[#00A69C]"
+                  className={styles.loginFormInput}
                   required
                   disabled={isLoading}
                   autoComplete="email"
@@ -146,21 +107,18 @@ function LoginForm() {
 
             {/* Mot de passe */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
+              <label htmlFor="password" className={styles.loginFormLabel}>
                 Mot de passe
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <div className={styles.loginFormInputWrapper}>
+                <Lock className={styles.loginFormInputIcon} />
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-12 border-slate-200 focus:border-[#00A69C] focus:ring-[#00A69C]"
+                  className={styles.loginFormInput}
                   required
                   disabled={isLoading}
                   autoComplete="current-password"
@@ -171,7 +129,7 @@ function LoginForm() {
             {/* Bouton de soumission */}
             <Button
               type="submit"
-              className="w-full h-12 bg-[#00A69C] hover:bg-[#00796B] text-white font-medium rounded-lg shadow-sm"
+              className={styles.loginFormSubmit}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -186,42 +144,41 @@ function LoginForm() {
           </form>
 
           {/* Informations de test */}
-          <div className="mt-8 pt-8 border-t border-slate-200">
-            <p className="text-xs text-slate-500 text-center mb-3">
-              Compte de démonstration
-            </p>
-            <div className="bg-slate-50 rounded-lg p-4 space-y-1.5">
-              <p className="text-xs font-mono text-slate-700">
-                <span className="text-slate-500">Email:</span>{' '}
+          <div className={styles.loginDemoSection}>
+            <p className={styles.loginDemoTitle}>Compte de démonstration</p>
+            <div className={styles.loginDemoCard}>
+              <p className={styles.loginDemoRow}>
+                <span className={styles.loginDemoRowLabel}>Email:</span>{' '}
                 admin@allsyde.fr
               </p>
-              <p className="text-xs font-mono text-slate-700">
-                <span className="text-slate-500">Mot de passe:</span>{' '}
+              <p className={styles.loginDemoRow}>
+                <span className={styles.loginDemoRowLabel}>Mot de passe:</span>{' '}
                 password
               </p>
             </div>
           </div>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className={styles.loginFormFooter}>
+            Pas encore de compte ?{' '}
+            <Link href="/register" className={styles.loginFormLink}>
+              Créer un compte
+            </Link>
+          </p>
+
+          <p className={styles.loginFormLegal}>
             En continuant, vous acceptez nos{" "}
             <button
               type="button"
-              className="text-[#00A69C] hover:underline inline"
-              onClick={() => {
-                // Ouvrir modal CGU (à implémenter)
-                console.log('CGU clicked');
-              }}
+              className={styles.loginFormLegalLink}
+              onClick={() => { console.log('CGU clicked'); }}
             >
-              Conditions d'utilisation
+              Conditions d&apos;utilisation
             </button>{" "}
             et notre{" "}
             <button
               type="button"
-              className="text-[#00A69C] hover:underline inline"
-              onClick={() => {
-                // Ouvrir modal politique (à implémenter)
-                console.log('Politique clicked');
-              }}
+              className={styles.loginFormLegalLink}
+              onClick={() => { console.log('Politique clicked'); }}
             >
               Politique de confidentialité
             </button>
@@ -235,8 +192,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className={styles.loginFallback}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#00A69C' }} />
       </div>
     }>
       <LoginForm />

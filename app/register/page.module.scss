@@ -1,0 +1,562 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Variables SCSS – palette Register page
+// ─────────────────────────────────────────────────────────────────────────────
+
+$primary:       #00A69C;
+$primary-dark:  #00796B;
+$primary-5:     rgba(0, 166, 156, 0.05);
+$primary-30:    rgba(0, 166, 156, 0.30);
+$primary-80:    rgba(0, 166, 156, 0.80);
+$dark-80:       rgba(0, 121, 107, 0.80);
+
+$slate-50:   #f8fafc;
+$slate-100:  #f1f5f9;
+$slate-200:  #e2e8f0;
+$slate-300:  #cbd5e1;
+$slate-400:  #94a3b8;
+$slate-500:  #64748b;
+$slate-600:  #475569;
+$slate-700:  #334155;
+$slate-800:  #1e293b;
+$slate-900:  #0f172a;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerPage {
+  min-height: 100vh;
+  display: flex;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Branding panel (gauche, masqué sur mobile)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerBranding {
+  display: none;
+  position: relative;
+
+  @media (min-width: 1024px) {
+    display: flex;
+    width: 50%;
+  }
+}
+
+.registerBrandingImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.registerBrandingOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, $primary-80, $dark-80);
+}
+
+.registerBrandingContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 3rem;
+  color: white;
+}
+
+.registerBrandingTitle {
+  font-family: Manrope, sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.registerBrandingDesc {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  max-width: 28rem;
+  line-height: 1.625;
+}
+
+.registerBrandingStats {
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.registerBrandingStat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.registerBrandingStatIcon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registerBrandingStatValue { font-weight: 600; }
+.registerBrandingStatLabel  { font-size: 0.875rem; opacity: 0.75; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Panel formulaire (droite)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerFormSide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  background: white;
+  overflow-y: auto;
+
+  @media (min-width: 1024px) {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+.registerFormContainer {
+  max-width: 28rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Logo
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.registerLogoIcon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background-color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registerLogoIconText {
+  color: white;
+  font-family: Manrope, sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.registerLogoName {
+  font-family: Manrope, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $slate-900;
+}
+
+.registerLogoVersion {
+  font-size: 0.875rem;
+  color: $slate-500;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Titres
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerTitle {
+  font-family: Manrope, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: $slate-900;
+  margin-bottom: 0.5rem;
+}
+
+.registerSubtitle {
+  color: $slate-600;
+  margin-bottom: 2rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alertes
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerAlertSuccess {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.registerAlertSuccessIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #16a34a;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.registerAlertSuccessTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #166534;
+}
+
+.registerAlertSuccessMsg {
+  font-size: 0.875rem;
+  color: #15803d;
+  margin-top: 0.25rem;
+}
+
+.registerAlertError {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.registerAlertErrorIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.registerAlertErrorTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #991b1b;
+}
+
+.registerAlertErrorMsg {
+  font-size: 0.875rem;
+  color: #b91c1c;
+  margin-top: 0.25rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Structure du formulaire
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.registerFormRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.registerFormRoleLabel,
+.registerFormLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $slate-700;
+  margin-bottom: 0.5rem;
+}
+
+.registerFormRequired { color: #ef4444; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wrappers et icônes des inputs
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerFormInputWrapper { position: relative; }
+
+%input-icon-base {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $slate-400;
+}
+
+.registerFormInputIconSm {
+  @extend %input-icon-base;
+  width: 1rem;
+  height: 1rem;
+}
+
+.registerFormInputIconMd {
+  @extend %input-icon-base;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.registerFormInputIconRight {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: $slate-400;
+  pointer-events: none;
+}
+
+.registerFormInput {
+  padding-left: 2.5rem;
+  height: 2.75rem;
+  border-color: $slate-200;
+
+  &:focus {
+    border-color: $primary;
+    --tw-ring-color: #{$primary};
+  }
+}
+
+.registerFormInputWide {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  height: 2.75rem;
+  border-color: $slate-200;
+
+  &:focus {
+    border-color: $primary;
+    --tw-ring-color: #{$primary};
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section société
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerFormSection {
+  padding-top: 0.5rem;
+  border-top: 1px solid $slate-100;
+}
+
+.registerFormSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.registerFormSectionTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $slate-400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.registerCompanyToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: $primary;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover { text-decoration: underline; }
+}
+
+.registerCompanySearchWrapper { position: relative; }
+
+.registerCompanyDropdown {
+  position: absolute;
+  z-index: 20;
+  margin-top: 0.25rem;
+  width: 100%;
+  background: white;
+  border: 1px solid $slate-200;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.registerCompanyDropdownEmpty {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: $slate-500;
+}
+
+.registerCompanyDropdownCreateBtn {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: $primary;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover { text-decoration: underline; }
+}
+
+.registerCompanyDropdownList {
+  max-height: 13rem;
+  overflow-y: auto;
+
+  > li + li { border-top: 1px solid $slate-100; }
+}
+
+.registerCompanyDropdownItem {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover { background-color: $slate-50; }
+}
+
+.registerCompanyDropdownItemName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $slate-800;
+}
+
+.registerCompanyDropdownItemAddress {
+  font-size: 0.75rem;
+  color: $slate-500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registerCompanySelected {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: $primary-5;
+  border: 1px solid $primary-30;
+  border-radius: 0.5rem;
+}
+
+.registerCompanySelectedIcon {
+  width: 1rem;
+  height: 1rem;
+  color: $primary;
+  flex-shrink: 0;
+}
+
+.registerCompanySelectedName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $slate-800;
+}
+
+.registerCompanySelectedAddress {
+  font-size: 0.75rem;
+  color: $slate-500;
+}
+
+.registerCompanyCreateFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sélecteur de rôle
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerRolePicker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.registerRoleCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid $slate-200;
+  color: $slate-600;
+  background: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+
+  &:hover { border-color: $slate-300; }
+}
+
+.registerRoleCardActive {
+  border-color: $primary !important;
+  background-color: $primary-5;
+  color: $primary;
+}
+
+.registerRoleCardIcon  { width: 1.5rem; height: 1.5rem; }
+.registerRoleCardTitle { font-size: 0.875rem; font-weight: 500; }
+.registerRoleCardDesc  { font-size: 0.75rem; opacity: 0.7; text-align: center; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bouton submit et footer
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerFormSubmit {
+  width: 100%;
+  height: 3rem;
+  background-color: $primary;
+  color: white;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  transition: background-color 0.15s;
+
+  &:hover:not(:disabled) { background-color: $primary-dark; }
+}
+
+.registerFormFooter {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: $slate-600;
+}
+
+.registerFormLoginLink {
+  color: $primary;
+  font-weight: 500;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Suspense fallback
+// ─────────────────────────────────────────────────────────────────────────────
+
+.registerFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}

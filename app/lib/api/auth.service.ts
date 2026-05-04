@@ -63,6 +63,52 @@ export function isAuthenticated(): boolean {
   return hasAuthToken();
 }
 
+export interface CompanySuggestion {
+  id: number;
+  name: string;
+  address: string;
+}
+
+export interface RegisterData {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  role: 'ROLE_MANAGER' | 'ROLE_PROVIDER';
+  // Société existante OU nouvelle société
+  companyId?: number;
+  companyName?: string;
+  companyAddress?: string;
+}
+
+/**
+ * Recherche des sociétés existantes (endpoint public pour le formulaire d'inscription)
+ */
+export async function searchCompanies(search?: string): Promise<CompanySuggestion[]> {
+  const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+  return httpGet<CompanySuggestion[]>(`/register/companies${qs}`, {
+    requireAuth: false,
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+  });
+}
+
+/**
+ * Crée un nouveau compte utilisateur (inscription publique)
+ */
+export async function register(data: RegisterData): Promise<void> {
+  await httpPost(
+    '/register',
+    data,
+    {
+      requireAuth: false,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    }
+  );
+}
+
 /**
  * Vérifie la validité du token en essayant de récupérer l'utilisateur
  * Retourne true si le token est valide, false sinon

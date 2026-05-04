@@ -1,0 +1,210 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared SCSS variables & mixins – pages d'authentification (login / register)
+// Utilisé via @use '../styles/auth-shared' as * dans chaque module SCSS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Couleurs ─────────────────────────────────────────────────────────────────
+
+$primary:       #00A69C;
+$primary-dark:  #00796B;
+$primary-5:     rgba(0, 166, 156, 0.05);
+$primary-30:    rgba(0, 166, 156, 0.30);
+$primary-80:    rgba(0, 166, 156, 0.80);
+$dark-80:       rgba(0, 121, 107, 0.80);
+
+$slate-50:   #f8fafc;
+$slate-100:  #f1f5f9;
+$slate-200:  #e2e8f0;
+$slate-300:  #cbd5e1;
+$slate-400:  #94a3b8;
+$slate-500:  #64748b;
+$slate-600:  #475569;
+$slate-700:  #334155;
+$slate-800:  #1e293b;
+$slate-900:  #0f172a;
+
+// ─── Typographie ──────────────────────────────────────────────────────────────
+
+$font-heading: Manrope, sans-serif;
+
+// ─── Mixins – layout ──────────────────────────────────────────────────────────
+
+@mixin auth-page {
+  min-height: 100vh;
+  display: flex;
+}
+
+@mixin auth-form-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  background: white;
+  overflow-y: auto;
+
+  @media (min-width: 1024px) {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+@mixin auth-form-container {
+  max-width: 28rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// ─── Mixins – logo ────────────────────────────────────────────────────────────
+
+@mixin auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@mixin auth-logo-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background-color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin auth-logo-icon-text {
+  color: white;
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+@mixin auth-logo-name {
+  font-family: $font-heading;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $slate-900;
+}
+
+@mixin auth-logo-version {
+  font-size: 0.875rem;
+  color: $slate-500;
+}
+
+// ─── Mixins – titres ──────────────────────────────────────────────────────────
+
+@mixin auth-title {
+  font-family: $font-heading;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: $slate-900;
+  margin-bottom: 0.5rem;
+}
+
+@mixin auth-subtitle {
+  color: $slate-600;
+  margin-bottom: 2rem;
+}
+
+// ─── Mixins – alerte erreur ───────────────────────────────────────────────────
+
+@mixin auth-alert-error {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+@mixin auth-alert-error-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+@mixin auth-alert-error-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #991b1b;
+}
+
+@mixin auth-alert-error-msg {
+  font-size: 0.875rem;
+  color: #b91c1c;
+  margin-top: 0.25rem;
+}
+
+// ─── Mixins – formulaire ──────────────────────────────────────────────────────
+
+@mixin auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@mixin auth-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $slate-700;
+  margin-bottom: 0.5rem;
+}
+
+@mixin auth-form-input-wrapper {
+  position: relative;
+}
+
+@mixin auth-form-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: $slate-400;
+}
+
+@mixin auth-form-submit {
+  width: 100%;
+  background-color: $primary;
+  color: white;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: background-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background-color: $primary-dark;
+  }
+}
+
+@mixin auth-form-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: $slate-600;
+}
+
+@mixin auth-form-link {
+  color: $primary;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ─── Mixins – fallback Suspense ───────────────────────────────────────────────
+
+@mixin auth-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
