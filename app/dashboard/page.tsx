@@ -2,7 +2,6 @@
 
 import { FileText, Receipt, Building2, Wallet, TrendingUp, AlertCircle, Plus, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import Sidebar from '../components/sideBar';
 import { Button } from '../components/ui/button';
 import StatCard from '../components/statCard';
 import { useRouter } from 'next/navigation';
@@ -27,10 +26,7 @@ function DashboardContent() {
     const {push} = useRouter();
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      
-      <main className="flex-1 ml-64">
+    <div>
         {/* Header - Compact */}
         <header className="bg-card border-b border-border sticky top-14 z-10">
           <div className="px-6 py-4">
@@ -192,7 +188,6 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Shield,
   ChevronDown,
@@ -34,19 +34,21 @@ import { useAuthContext } from "../lib/AuthContext";
 import { useSites } from "../lib/hooks";
 import type { Site } from "../lib/types/site";
 import { DropdownMenuTrigger,DropdownMenuContent, DropdownMenu, DropdownMenuItem } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 interface SidebarProps {
-  // level: 'admin' | 'provider' | 'global' | 'site'
-  slug?: string
-  siteId?: string
-  selectedSite?: Site
-  onSiteChange?: (site: Site) => void
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSiteChange }: Readonly<SidebarProps>) {
-  const searchParams = useSearchParams();
+export default function Sidebar({ isOpen = false, onClose }: Readonly<SidebarProps>) {
   const pathname = usePathname();
+
+  // Auto-détection de siteId et slug depuis l'URL
+  // Patterns : /sites/[id], /sites/[id]/risks/[slug]
+  const pathParts = pathname.split('/').filter(Boolean);
+  const siteId = pathParts[0] === 'sites' && pathParts[1] ? pathParts[1] : undefined;
+  const slug = pathParts[3] ?? 'overview';
   const { user, logout } = useAuthContext();
   const { sites } = useSites();
   const [isRiskModuleOpen, setIsRiskModuleOpen] = useState(!!siteId);
@@ -79,14 +81,22 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
         { icon: FileArchive, label: "Documents", section: "documents", path: `/sites/${siteId}/risk/documents` },
       ];
 
-  // const currentSection = searchParams.get('section');
+  // Trouver le site courant depuis la liste déjà chargée
+  const siteIdNum = siteId ? Number.parseInt(siteId) : undefined;
+  const sitesList: Site[] = Array.isArray(sites) ? sites : [];
+  const currentSite = siteIdNum ? sitesList.find((s: Site) => s.id === siteIdNum) : undefined;
+
   const currentSection = slug;
   const isInRiskModule = !!siteId && riskSubPages.some(page => page.section === currentSection);
   const isSubPageActive = (section: string) => currentSection === section;
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-64 bg-white border-r border-slate-200 flex flex-col z-40">
+      {/* Sidebar responsive : cachée par défaut sur mobile, toujours visible sur lg+ */}
+      <aside
+        className={`fixed left-0 top-0 z-40 flex flex-col w-64 h-screen pt-14 bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+      >
         {/* Logo */}
         <div className="p-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
@@ -123,9 +133,9 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
                 <div className="flex items-center gap-3">
                   <Building2 className="w-5 h-5 text-[#00A69C]" />
                   <div className="text-left">
-                    <p className="font-medium text-slate-900 text-sm">{selectedSite?.label || "Sélectionner"}</p>
+                    <p className="font-medium text-slate-900 text-sm">{currentSite?.label || "Sélectionner"}</p>
                     <p className="text-xs text-slate-500">
-                      {typeof selectedSite?.assetType === 'string' ? selectedSite?.assetType : selectedSite?.assetType?.label || ""}
+                      {typeof currentSite?.assetType === 'string' ? currentSite?.assetType : (currentSite?.assetType as { label?: string } | undefined)?.label || ""}
                     </p>
                   </div>
                 </div>
@@ -138,7 +148,7 @@ export default function Sidebar({ slug = 'overview', siteId, selectedSite, onSit
                   key={site.id}
                   className="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50"
                   onClick={() => {
-                    onSiteChange?.(site)
+                    onClose?.();
                     if (typeof globalThis.window !== 'undefined') {
                       globalThis.window.location.href = `/sites/${site.id}`
                     }

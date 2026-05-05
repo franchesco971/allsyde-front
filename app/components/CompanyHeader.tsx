@@ -1,19 +1,29 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { Menu } from 'lucide-react';
 import { useAuthContext } from '../lib/AuthContext';
 import { API_CONFIG } from '../lib/api/config';
 
-const HIDDEN_PATHS = ['/', '/login'];
+interface NavbarProps {
+  onToggleSidebar: () => void;
+}
 
-export default function CompanyHeader() {
-  const pathname = usePathname();
-  const { user, isAuthenticated } = useAuthContext();
-
-  if (!isAuthenticated || HIDDEN_PATHS.includes(pathname)) return null;
+export default function Navbar({ onToggleSidebar }: Readonly<NavbarProps>) {
+  const { user } = useAuthContext();
 
   return (
-    <div className="sticky top-0 w-full h-14 bg-white border-b border-slate-200 z-50 flex items-center px-6 gap-3">
+    <nav className="fixed top-0 z-50 w-full h-14 bg-white border-b border-slate-200 flex items-center px-4 gap-3">
+      {/* Hamburger – visible uniquement sur mobile */}
+      <button
+        onClick={onToggleSidebar}
+        type="button"
+        className="max-lg:inline-flex items-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors lg:hidden"
+        aria-label="Ouvrir le menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Logo entreprise */}
       {user?.company?.logo ? (
         <img
           src={`${API_CONFIG.BASE_URL}${user.company.logo}`}
@@ -27,11 +37,12 @@ export default function CompanyHeader() {
           </span>
         </div>
       )}
+
       {user?.company?.name && (
         <span className="text-sm font-semibold text-slate-800 truncate">
           {user.company.name}
         </span>
       )}
-    </div>
+    </nav>
   );
 }

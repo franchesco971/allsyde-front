@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import Sidebar from '../components/sideBar';
 import { Button } from '../components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useSites } from '../lib/hooks';
@@ -82,16 +81,11 @@ function SitesContent() {
   // Gestion du chargement
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <main className="flex-1 ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Chargement des sites...</p>
-            </div>
-          </div>
-        </main>
+      <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Chargement des sites...</p>
+        </div>
       </div>
     );
   }
@@ -99,36 +93,28 @@ function SitesContent() {
   // Gestion des erreurs
   if (error) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <main className="flex-1 ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">⚠️</span>
-              </div>
-              <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
-              <p className="text-muted-foreground mb-4">{error}</p>
-              <Button 
-                onClick={() => globalThis.location.reload()} 
-                className="bg-primary hover:bg-primary-hover text-primary-foreground"
-              >
-                Réessayer
-              </Button>
-            </div>
+      <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">⚠️</span>
           </div>
-        </main>
+          <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button 
+            onClick={() => globalThis.location.reload()} 
+            className="bg-primary hover:bg-primary-hover text-primary-foreground"
+          >
+            Réessayer
+          </Button>
+        </div>
       </div>
     );
   }
   
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      
-      <main className="flex-1 ml-64">
-        {/* Header - Utilisation du composant */}
-        <SitesHeader
+    <div>
+      {/* Header - Utilisation du composant */}
+      <SitesHeader
           aiStats={aiStats}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -184,8 +170,7 @@ function SitesContent() {
               <p className="label-secondary">Aucun site trouvé</p>
             </div>
           )}
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
